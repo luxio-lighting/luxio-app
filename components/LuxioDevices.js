@@ -1,49 +1,32 @@
 import { useState, useEffect } from 'react';
-import { RefreshControl, ScrollView, View, Text, ActivityIndicator } from 'react-native';
-import { AntDesign } from '@expo/vector-icons';
-import { Ionicons } from '@expo/vector-icons';
+import { ScrollView, View, Text, ActivityIndicator } from 'react-native';
+import { AntDesign, Ionicons } from '@expo/vector-icons';
 import TouchableScale from 'react-native-touchable-scale';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import alert from '../services/alert.js';
 
 import discovery from '../services/discovery.js';
 
-import LuxioDeviceSmall from '../components/LuxioDeviceSmall.js';
-
-const POLL_INTERVAL = 5000;
+import LuxioDeviceSmall from './LuxioDeviceSmall.js';
 
 export default function LuxioDevices() {
   const [devices, setDevices] = useState(null);
-  const [discovering, setDiscovering] = useState(false);
-  const [discoveringManually, setDiscoveringManually] = useState(false);
-
-  const discover = async () => {
-    if (discovering) return;
-
-    setDiscovering(true);
-    await discovery.discoverDevices()
-      .then(devices => {
-        setDevices(devices);
-      })
-      .catch(err => alert.error(err))
-      .finally(() => {
-        setDiscovering(false);
-      })
-  }
-
-  const discoverManually = () => {
-    setDiscoveringManually(true);
-    discover()
-      .finally(() => {
-        setDiscoveringManually(false);
-      });
-  }
 
   useEffect(() => {
-    discover();
-    const discoverInterval = setInterval(discover, POLL_INTERVAL);
-    return () => clearInterval(discoverInterval);
+    discovery.registerDeviceCallback(() => {
+      const devices = discovery.getDevices();
+      setDevices({ ...devices });
+    });
+
+    const devices = discovery.getDevices();
+    if (Object.keys(devices).length > 0) {
+      setDevices({ ...devices });
+    } else {
+      setTimeout(() => {
+        const devices = discovery.getDevices();
+        setDevices({ ...devices });
+      }, 5000); // Show 'No Luxios Found' after 5 seconds
+    }
   }, []);
 
   return (
@@ -87,7 +70,7 @@ export default function LuxioDevices() {
         </View>
       )}
 
-      {!devices && discovering && (
+      {!devices && (
         <View
           style={{
             height: '100%',
@@ -104,14 +87,6 @@ export default function LuxioDevices() {
               marginBottom: 12,
             }}
           />
-          {/* <MaterialCommunityIcons
-            name="radar"
-            size={42}
-            color="white"
-            style={{
-              marginBottom: 12,
-            }}
-          /> */}
           <Text
             style={{
               fontFamily: 'NunitoBold',
@@ -127,12 +102,12 @@ export default function LuxioDevices() {
               lineHeight: 28,
               color: 'white',
               marginBottom: 24,
+              textAlign: 'center',
 
             }}
-          >Luxio devices are being discovered.</Text>
+          >Searching for Luxios on Wi-Fi...</Text>
         </View>
       )}
-
 
       {devices && Object.keys(devices).length === 0 && (
         <View
@@ -159,11 +134,12 @@ export default function LuxioDevices() {
               color: 'white',
               marginBottom: 16,
             }}
-          >No Luxios Found.</Text>
+          >No Luxios Found</Text>
           <Text
             style={{
               fontFamily: 'NunitoSemiBold',
               fontSize: 18,
+              textAlign: 'center',
               lineHeight: 28,
               color: 'white',
               marginBottom: 36,
@@ -209,12 +185,6 @@ export default function LuxioDevices() {
           style={{
             height: '100%',
           }}
-          refreshControl={<RefreshControl
-            tintColor={'#fff'}
-            progressBackgroundColor={'#fff'}
-            refreshing={discoveringManually}
-            onRefresh={discoverManually}
-          />}
         >
           {Object.entries(devices).map(([deviceId, device]) => (
             <LuxioDeviceSmall

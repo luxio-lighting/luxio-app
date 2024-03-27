@@ -9,15 +9,15 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 
-SplashScreen.preventAutoHideAsync();
-
 import LuxioDevices from '../components/LuxioDevices.js';
+
+SplashScreen.preventAutoHideAsync();
 
 export default function App() {
   const [fontsLoaded] = useFonts({
-    'NunitoMedium': require('../assets/fonts/Nunito-Medium.ttf'),
-    'NunitoSemiBold': require('../assets/fonts/Nunito-SemiBold.ttf'),
-    'NunitoBold': require('../assets/fonts/Nunito-Bold.ttf'),
+    NunitoMedium: require('../assets/fonts/Nunito-Medium.ttf'),
+    NunitoSemiBold: require('../assets/fonts/Nunito-SemiBold.ttf'),
+    NunitoBold: require('../assets/fonts/Nunito-Bold.ttf'),
   });
 
   const onLayoutRootView = useCallback(async () => {

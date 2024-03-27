@@ -1,3 +1,5 @@
 export default {
-  error: () => { },
+  error: () => {
+    // This method is overwritten in _layout.js
+  },
 };

@@ -1,3 +1,3 @@
-import Discovery from '../lib/Discovery.js';
+import LuxioDiscovery from '../lib/LuxioDiscovery.js';
 
-export default new Discovery();
+export default new LuxioDiscovery();

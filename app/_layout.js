@@ -1,19 +1,8 @@
 import { Stack } from 'expo-router';
-import DropdownAlert, { DropdownAlertType } from 'react-native-dropdownalert';
-import alert from '../services/alert.js';
 
 export default function Layout() {
   return (
     <>
-      <DropdownAlert alert={fn => {
-        alert.error = err => {
-          fn({
-            type: DropdownAlertType.Error,
-            title: 'Error',
-            message: err.message || err.toString(),
-          });
-        };
-      }} />
       <Stack
         screenOptions={{
           headerShown: false,

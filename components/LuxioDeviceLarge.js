@@ -1,17 +1,15 @@
-import { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { useState, useEffect } from 'react';
+import {
+  StyleSheet, View, Text, TouchableOpacity, ScrollView, Alert,
+} from 'react-native';
 import { router, Stack } from 'expo-router';
 import { Ionicons, Entypo } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import TouchableScale from 'react-native-touchable-scale';
 import { useHeaderHeight } from '@react-navigation/elements';
-import { LinearGradient } from 'expo-linear-gradient';
-import { AnimatedGradient } from '../components/AnimatedGradient';
 import * as Haptics from 'expo-haptics';
-import lodash from 'lodash';
-import alert from '../services/alert.js';
+import { LinearGradient } from 'expo-linear-gradient';
+import LuxioUtil from '../lib/LuxioUtil.js';
 
-const POLL_INTERVAL = 1000;
 const PRESETS_EFFECTS = [
   {
     name: 'Rainbow',
@@ -32,177 +30,302 @@ const PRESETS_EFFECTS = [
 const PRESET_GRADIENTS = [
   {
     name: 'Luxio',
-    gradient: [
-      '#4FFF7F',
-      '#00D2FF',
+    colors: [
+      {
+        r: 79, g: 255, b: 127, w: 0,
+      },
+      {
+        r: 0, g: 210, b: 255, w: 0,
+      },
     ],
   },
   {
     name: 'Aurora',
-    gradient: [
-      '#00C6FF',
-      '#006CFF',
-      '#AFFF00',
-      '#3FFFA0'
-    ]
+    colors: [
+      {
+        r: 0, g: 198, b: 255, w: 0,
+      },
+      {
+        r: 0, g: 108, b: 255, w: 0,
+      },
+      {
+        r: 175, g: 255, b: 0, w: 0,
+      },
+      {
+        r: 63, g: 255, b: 160, w: 0,
+      },
+    ],
   },
   {
     name: 'Sunset',
-    gradient: [
-      '#FF0000',
-      '#FFAA00',
-      '#FF3300',
-      '#FFAA00',
-      '#AA3300'
-    ]
+    colors: [
+      {
+        r: 255, g: 0, b: 0, w: 0,
+      },
+      {
+        r: 255, g: 170, b: 0, w: 0,
+      },
+      {
+        r: 255, g: 51, b: 0, w: 0,
+      },
+      {
+        r: 255, g: 170, b: 0, w: 0,
+      },
+      {
+        r: 170, g: 51, b: 0, w: 0,
+      },
+    ],
   },
   {
     name: 'Morning',
-    gradient: [
-      '#E0B35C',
-      '#FFAAFF',
-      '#B9F025',
-      '#543B76',
-      '#5F4624'
-    ]
+    colors: [
+      {
+        r: 224, g: 179, b: 92, w: 0,
+      },
+      {
+        r: 255, g: 170, b: 255, w: 0,
+      },
+      {
+        r: 185, g: 240, b: 37, w: 0,
+      },
+      {
+        r: 84, g: 59, b: 118, w: 0,
+      },
+      {
+        r: 95, g: 70, b: 36, w: 0,
+      },
+    ],
   },
   {
     name: 'Northpole',
-    gradient: [
-      '#7D9CCD',
-      '#FFFFFF',
-      '#117392'
-    ]
+    colors: [
+      {
+        r: 125, g: 156, b: 205, w: 0,
+      },
+      {
+        r: 255, g: 255, b: 255, w: 0,
+      },
+      {
+        r: 17, g: 115, b: 146, w: 0,
+      },
+    ],
   },
   {
     name: 'Party',
-    gradient: [
-      '#DE00FF',
-      '#1E00FF',
-      '#00B4FF'
-    ]
+    colors: [
+      {
+        r: 222, g: 0, b: 255, w: 0,
+      },
+      {
+        r: 30, g: 0, b: 255, w: 0,
+      },
+      {
+        r: 0, g: 180, b: 255, w: 0,
+      },
+    ],
   },
   {
     name: 'Grass',
-    gradient: [
-      '#7E922C',
-      '#00FF00',
-      '#A3F4A2',
-      '#738501'
-    ]
+    colors: [
+      {
+        r: 126, g: 146, b: 44, w: 0,
+      },
+      {
+        r: 0, g: 255, b: 0, w: 0,
+      },
+      {
+        r: 163, g: 244, b: 162, w: 0,
+      },
+      {
+        r: 115, g: 133, b: 1, w: 0,
+      },
+    ],
   },
   {
     name: 'Candlelight',
-    gradient: [
-      '#2C0701',
-      '#C23704',
-      '#F8C111',
-      '#2C0701'
-    ]
+    colors: [
+      {
+        r: 44, g: 7, b: 1, w: 0,
+      },
+      {
+        r: 194, g: 55, b: 4, w: 0,
+      },
+      {
+        r: 248, g: 193, b: 17, w: 0,
+      },
+      {
+        r: 44, g: 7, b: 1, w: 0,
+      },
+    ],
   },
   {
     name: 'Spectrum',
-    gradient: [
-      '#FF0000',
-      '#FFFF00',
-      '#00FF00',
-      '#00FFFF',
-      '#0000FF',
-      '#FF00FF'
-    ]
+    colors: [
+      {
+        r: 255, g: 0, b: 0, w: 0,
+      },
+      {
+        r: 255, g: 255, b: 0, w: 0,
+      },
+      {
+        r: 0, g: 255, b: 0, w: 0,
+      },
+      {
+        r: 0, g: 255, b: 255, w: 0,
+      },
+      {
+        r: 0, g: 0, b: 255, w: 0,
+      },
+      {
+        r: 255, g: 0, b: 255, w: 0,
+      },
+    ],
   },
   {
     name: 'Focus',
-    gradient: [
-      '#D3F7FF',
-      '#FFFFFF',
-      '#FFFFFF',
-      '#FFFFFF',
-      '#D3F7FF'
-    ]
+    colors: [
+      {
+        r: 211, g: 247, b: 255, w: 0,
+      },
+      {
+        r: 255, g: 255, b: 255, w: 0,
+      },
+      {
+        r: 255, g: 255, b: 255, w: 0,
+      },
+      {
+        r: 255, g: 255, b: 255, w: 0,
+      },
+      {
+        r: 211, g: 247, b: 255, w: 0,
+      },
+    ],
   },
 ];
 const PRESET_COLORS = [
   {
     name: 'Red',
-    color: '#FF0000',
+    color: {
+      r: 255, g: 0, b: 0, w: 0,
+    },
   },
   {
     name: 'Orange',
-    color: '#FFA500',
+    color: {
+      r: 255, g: 165, b: 0, w: 0,
+    },
   },
   {
     name: 'Yellow',
-    color: '#FFFF00',
+    color: {
+      r: 255, g: 255, b: 0, w: 0,
+    },
   },
   {
     name: 'Green',
-    color: '#00FF00',
+    color: {
+      r: 0, g: 255, b: 0, w: 0,
+    },
   },
   {
     name: 'Cyan',
-    color: '#00FFFF',
+    color: {
+      r: 0, g: 255, b: 255, w: 0,
+    },
   },
   {
     name: 'Blue',
-    color: '#0000FF',
+    color: {
+      r: 0, g: 0, b: 255, w: 0,
+    },
   },
   {
     name: 'Magenta',
-    color: '#FF00FF',
+    color: {
+      r: 255, g: 0, b: 255, w: 0,
+    },
   },
   {
     name: 'Pink',
-    color: '#FF1493',
+    color: {
+      r: 255, g: 20, b: 147, w: 0,
+    },
   },
   {
     name: 'Purple',
-    color: '#800080',
+    color: {
+      r: 128, g: 0, b: 128, w: 0,
+    },
   },
   {
-    name: 'White',
-    color: '#FFFFFF',
+    name: 'RGB White',
+    color: {
+      r: 255, g: 255, b: 255, w: 0,
+    },
+  },
+  {
+    name: 'RGBW White',
+    color: {
+      r: 0, g: 0, b: 0, w: 255,
+    },
+  },
+  {
+    name: 'RGB+W White',
+    color: {
+      r: 255, g: 255, b: 255, w: 255,
+    },
+  },
+  {
+    name: 'Warm White',
+    color: {
+      r: 255, g: 0, b: 0, w: 255,
+    },
+  },
+  {
+    name: 'Cool White',
+    color: {
+      r: 0, g: 0, b: 255, w: 255,
+    },
   },
 ];
 
 export default function LuxioDeviceLarge(props) {
   const { device } = props;
 
-  const [synced, setSynced] = useState(device.synced);
+  const [connected, setConnected] = useState(device.isConnected());
   const [name, setName] = useState(device.name);
-  const [on, setOn] = useState(device.synced ? device.on : null);
-  const [brightness, setBrightness] = useState(device.synced ? device.brightness : null);
-  const [gradient, setGradient] = useState(device.synced && device.gradient
-    ? device.gradient
-    : ['#000000', '#000000']);
-  const [effect, setEffect] = useState(device.synced ? device.effect : null);
+  const [on, setOn] = useState(device.led.state?.on ?? false);
+  const [brightness, setBrightness] = useState(device.led.state?.brightness ?? null);
+  const [gradient, setGradient] = useState(device.led.state?.colors ?? ['#222222', '#333333']);
 
-  const sync = useCallback(() => {
-    device.sync()
-      .then(() => {
-        setSynced(true);
-        setName(device.name);
-        setOn(device.on);
-        setBrightness(device.brightness);
-        setEffect(device.effect);
-        setGradient(device.on && device.gradient
-          ? device.gradient
-          : ['#333333', '#444444']
-        );
-      })
-      .catch(alert.error);
-  }, []);
+  const setLedState = (ledState) => {
+    // On
+    const { on } = ledState;
+    setOn(on);
 
-  const syncThrottled = useCallback(lodash.throttle(() => {
-    sync();
-  }, 200), [sync]);
+    // Brightness
+    const { brightness } = ledState;
+    setBrightness(brightness);
 
-  // Sync every POLL_INTERVAL
+    // Gradient
+    const gradient = ledState.colors.map(LuxioUtil.rgbw2hex);
+    if (gradient.length === 1) gradient.push(gradient[0]);
+    setGradient(gradient);
+  };
+
   useEffect(() => {
-    sync();
-    const syncInterval = setInterval(syncThrottled, POLL_INTERVAL);
-    return () => clearInterval(syncInterval);
-  }, [sync]);
+    device.connect()
+      .then(() => {
+        setConnected(true);
+        setName(device.system.config?.name);
+        setLedState(device.led.state);
+      })
+      .catch(err => Alert.alert('Error Connecting', err.message));
+
+    device.addEventListener('led.state', (state) => {
+      setLedState(state);
+    });
+  }, []);
 
   return (
     <>
@@ -229,7 +352,7 @@ export default function LuxioDeviceLarge(props) {
                     pathname: '/deviceSettings',
                     params: {
                       id: device.id,
-                    }
+                    },
                   });
                 }}
               >
@@ -239,7 +362,6 @@ export default function LuxioDeviceLarge(props) {
           },
         }}
       />
-
 
       <View
         style={{
@@ -251,16 +373,18 @@ export default function LuxioDeviceLarge(props) {
           backgroundColor: '#000',
         }}
       >
-        <AnimatedGradient
+        <LinearGradient
           style={{
             position: 'absolute',
             width: '100%',
             height: '100%',
-            opacity: 0.2 + brightness * 0.8,
+            opacity: on
+              ? 0.2 + brightness * 0.8
+              : 0,
           }}
           colors={gradient}
           start={[0, 0]}
-          end={[0, 1]}
+          end={[1, 1]}
         />
         <LinearGradient
           style={{
@@ -289,7 +413,7 @@ export default function LuxioDeviceLarge(props) {
           padding: 24,
         }}
       >
-        <Text
+        {/* <Text
           style={styles.presetsTitle}
         >Effects</Text>
         <View
@@ -303,9 +427,9 @@ export default function LuxioDeviceLarge(props) {
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-                device.on = true;
-                device.effect = preset.effect;
-                syncThrottled();
+                device.led.setAnimation({
+                  id: preset.effect,
+                }).catch(alert);
               }}
             >
               <Image
@@ -318,16 +442,12 @@ export default function LuxioDeviceLarge(props) {
                 source={preset.image}
                 contentFit="cover"
               />
-              {/* <LinearGradient
-                colors={['#00000033', '#00000099']}
-                style={styles.presetIcon}
-              /> */}
               <Text
                 style={styles.presetText}
               >{preset.name}</Text>
-            </TouchableScale>)}
-
-        </View >
+            </TouchableScale>
+          )}
+        </View> */}
 
         <Text
           style={styles.presetsTitle}
@@ -343,13 +463,17 @@ export default function LuxioDeviceLarge(props) {
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-                device.on = true;
-                device.gradient = preset.gradient;
-                syncThrottled();
+                device.led.setGradient({
+                  colors: preset.colors,
+                })
+                  .then(() => {
+                    setGradient(preset.colors.map(LuxioUtil.rgbw2hex));
+                  })
+                  .catch(err => Alert.alert('Error Setting Gradient', err.message));
               }}
             >
               <LinearGradient
-                colors={preset.gradient}
+                colors={preset.colors.map(LuxioUtil.rgbw2hex)}
                 start={[0, 0]}
                 end={[1, 1]}
                 style={styles.presetIcon}
@@ -367,7 +491,8 @@ export default function LuxioDeviceLarge(props) {
               <Text
                 style={styles.presetText}
               >{preset.name}</Text>
-            </TouchableScale>)}
+            </TouchableScale>
+          )}
         </View>
 
         <Text
@@ -376,7 +501,7 @@ export default function LuxioDeviceLarge(props) {
         <View
           style={styles.presetsContainer}
         >
-          {PRESET_COLORS.map(preset =>
+          {PRESET_COLORS.map((preset) =>
             <TouchableScale
               key={`color-${preset.name}`}
               style={styles.presetContainer}
@@ -384,13 +509,18 @@ export default function LuxioDeviceLarge(props) {
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-                device.on = true;
-                device.gradient = [preset.color, preset.color];
-                syncThrottled();
+                device.led.setColor(preset.color)
+                  .then(() => {
+                    setGradient([preset.color, preset.color].map(LuxioUtil.rgbw2hex));
+                  })
+                  .catch(err => Alert.alert('Error Setting Color', err.message));
               }}
             >
               <LinearGradient
-                colors={[preset.color, preset.color]}
+                colors={[
+                  LuxioUtil.rgbw2hex(preset.color),
+                  LuxioUtil.rgbw2hex(preset.color),
+                ]}
                 style={styles.presetIcon}
               >
                 <LinearGradient
@@ -406,13 +536,14 @@ export default function LuxioDeviceLarge(props) {
               <Text
                 style={styles.presetText}
               >{preset.name}</Text>
-            </TouchableScale>)}
+            </TouchableScale>
+          )}
         </View>
 
       </ScrollView >
     </>
   );
-};
+}
 
 const styles = StyleSheet.create({
   presetsTitle: {
@@ -464,5 +595,5 @@ const styles = StyleSheet.create({
       width: 0,
       height: 1,
     },
-  }
+  },
 });

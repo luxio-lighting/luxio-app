@@ -1,33 +1,27 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Text, View, Switch, Platform } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { AnimatedGradient } from '../components/AnimatedGradient';
 import Slider from '@react-native-community/slider';
 import TouchableScale from 'react-native-touchable-scale';
 import { router } from 'expo-router';
-import Animated, {
-  withTiming,
-  useAnimatedStyle,
-  Easing,
-} from 'react-native-reanimated';
+import Animated, { withTiming, useAnimatedStyle, Easing } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import lodash from 'lodash';
-import alert from '../services/alert.js';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import { LuxioUtil } from 'luxio';
-
-const POLL_INTERVAL = 1000;
+import alert from '../services/alert.js';
+import { LinearGradient } from 'expo-linear-gradient';
+import { AnimatedGradient } from './AnimatedGradient';
+import LuxioUtil from '../lib/LuxioUtil.js';
+import { LuxioDiscoveryStrategyAP } from '@luxio-lighting/lib';
 
 export default function LuxioDeviceSmall(props) {
   const { device } = props;
 
-  const [synced, setSynced] = useState(device.synced);
+  const [connected, setConnected] = useState(device.isConnected());
   const [name, setName] = useState(device.name);
-  const [on, setOn] = useState(device.synced ? device.on : null);
-  const [brightness, setBrightness] = useState(device.synced ? device.brightness : null);
-  const [gradient, setGradient] = useState(device.synced ? device.gradient : ['#222222', '#333333']);
-  const [effect, setEffect] = useState(device.synced ? device.effect : null);
+  const [on, setOn] = useState(device.led.state?.on ?? false);
+  const [brightness, setBrightness] = useState(device.led.state?.brightness ?? null);
+  const [gradient, setGradient] = useState(device.led.state?.colors ?? ['#222222', '#333333']);
 
   const animatedContainerStyle = useAnimatedStyle(() => {
     return {
@@ -47,39 +41,55 @@ export default function LuxioDeviceSmall(props) {
     };
   });
 
-  const sync = useCallback(() => {
-    device.sync()
-      .then(() => {
-        setSynced(true);
-        setName(device.name);
-        setOn(device.on);
-        setBrightness(device.brightness);
-        setEffect(device.effect);
-        setGradient(device.on && device.gradient
-          ? device.gradient
-          : ['#333333', '#444444']
-        );
-      })
-      .catch(err => console.error(err));
+  const setBrightnessThrottled = useMemo(() => {
+    return lodash.throttle((value) => {
+      setBrightness(value);
+
+      device.led.setBrightness({
+        brightness: value,
+      }).catch((error) => {
+        alert.error(error);
+      });
+    }, 200);
   }, []);
 
-  const syncThrottled = useCallback(lodash.throttle(() => {
-    sync();
-  }, 200), [sync]);
+  const setLedState = (ledState) => {
+    // On
+    const { on } = ledState;
+    setOn(on);
 
-  // Sync every POLL_INTERVAL
+    // Brightness
+    const { brightness } = ledState;
+    setBrightness(brightness);
+
+    // Gradient
+    const gradient = ledState.colors.map(LuxioUtil.rgbw2hex);
+    if (gradient.length === 1) gradient.push(gradient[0]);
+    setGradient(gradient);
+  };
+
   useEffect(() => {
-    sync();
-    const syncInterval = setInterval(syncThrottled, POLL_INTERVAL);
-    return () => clearInterval(syncInterval);
-  }, [sync]);
+    device.connect()
+      .then(() => {
+        setConnected(true);
+        setName(device.system.config?.name);
+        setLedState(device.led.state);
+      })
+      .catch((error) => {
+        alert.error(error);
+      });
 
-  const isAP = `http://${device.address}` === LuxioUtil.AP_ADDRESS;
+    device.addEventListener('led.state', (state) => {
+      setLedState(state);
+    });
+  }, []);
+
+  const isHotspot = device.address === LuxioDiscoveryStrategyAP.ADDRESS;
 
   // Render
   return (
     <>
-      {isAP && (
+      {isHotspot && (
         <TouchableOpacity
           style={{
             marginHorizontal: 24,
@@ -121,12 +131,12 @@ export default function LuxioDeviceSmall(props) {
       }
 
       <TouchableScale
-        disabled={!synced}
+        disabled={!connected}
         activeScale={0.975}
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           router.push({
-            pathname: `device`,
+            pathname: 'device',
             params: {
               id: device.id,
             },
@@ -146,7 +156,7 @@ export default function LuxioDeviceSmall(props) {
             },
             shadowRadius: 12,
             borderRadius: 16,
-            ...isAP
+            ...isHotspot
               ? {
                 borderTopLeftRadius: 0,
                 borderTopRightRadius: 0,
@@ -158,7 +168,7 @@ export default function LuxioDeviceSmall(props) {
           <AnimatedGradient
             style={{
               borderRadius: 16,
-              ...isAP
+              ...isHotspot
                 ? {
                   borderTopLeftRadius: 0,
                   borderTopRightRadius: 0,
@@ -166,7 +176,11 @@ export default function LuxioDeviceSmall(props) {
                 : {},
               height: '100%',
             }}
-            colors={gradient}
+            colors={
+              on
+                ? gradient
+                : ['#00000000', '#00000000']
+            }
             start={[0, 1]}
             end={[1, 1]}
           />
@@ -179,7 +193,7 @@ export default function LuxioDeviceSmall(props) {
               padding: 24,
               height: '100%',
             }}
-            colors={synced
+            colors={connected
               ? ['#00000000', '#00000099']
               : ['#00000000', '#00000000']
             }
@@ -198,31 +212,19 @@ export default function LuxioDeviceSmall(props) {
                   flexGrow: 1,
                 }}
               >
-                {!synced && (
-                  <View
-                    style={{
-                      width: 160,
-                      height: 30,
-                      borderRadius: 100,
-                      backgroundColor: '#ffffff33',
-                    }}
-                  />
-                )}
-                {synced && (
-                  <Text
-                    style={{
-                      color: '#fff',
-                      fontFamily: 'NunitoBold',
-                      fontSize: 22,
-                      textShadowColor: '#00000033',
-                      textShadowRadius: 4,
-                      textShadowOffset: {
-                        width: 0,
-                        height: 1,
-                      },
-                    }}
-                  >{name}</Text>
-                )}
+                <Text
+                  style={{
+                    color: '#fff',
+                    fontFamily: 'NunitoBold',
+                    fontSize: 22,
+                    textShadowColor: '#00000033',
+                    textShadowRadius: 4,
+                    textShadowOffset: {
+                      width: 0,
+                      height: 1,
+                    },
+                  }}
+                >{name}</Text>
               </View>
 
               <View
@@ -230,7 +232,7 @@ export default function LuxioDeviceSmall(props) {
                   flexShrink: 0,
                 }}
               >
-                {!synced && (
+                {!connected && (
                   <View
                     style={{
                       width: 50,
@@ -240,21 +242,23 @@ export default function LuxioDeviceSmall(props) {
                     }}
                   />
                 )}
-                {synced && (
+                {connected && (
                   <Switch
                     value={on}
-                    onValueChange={value => {
+                    onValueChange={(value) => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       setOn(value);
-                      device.on = value;
-                      syncThrottled();
+
+                      device.led.setOn({
+                        on: !!value,
+                      });
                     }}
                     trackColor={{
                       false: '#ffffff33',
                       true: '#ffffff33',
                     }}
                     {...Platform.OS === 'ios' && ({
-                      ios_backgroundColor: '#ffffff33'
+                      ios_backgroundColor: '#ffffff33',
                     })}
                     {...Platform.OS === 'android' && ({
                       thumbColor: '#ffffff',
@@ -266,7 +270,7 @@ export default function LuxioDeviceSmall(props) {
                 )}
               </View>
             </View>
-            {synced && (
+            {connected && (
               <Animated.View
                 style={[{
                   pointerEvents: on
@@ -292,14 +296,12 @@ export default function LuxioDeviceSmall(props) {
                   style={{
                     height: 32,
                   }}
-                  onValueChange={value => {
-                    setBrightness(value);
-                    device.brightness = value;
-                    syncThrottled();
+                  onValueChange={(value) => {
+                    setBrightnessThrottled(value);
                   }}
-                  minimumValue={0}
-                  maximumValue={1}
-                  step={0.01}
+                  minimumValue={10}
+                  maximumValue={255}
+                  step={1}
                   tapToSeek={true}
                   value={brightness}
                   minimumTrackTintColor="#FFFFFFAA"

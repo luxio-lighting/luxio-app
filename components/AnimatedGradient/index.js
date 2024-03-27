@@ -1,16 +1,17 @@
-import React, { Component } from "react";
-import { StyleSheet, Animated } from "react-native";
-import { GradientHelper } from "./gradient-helper";
+import React, { Component } from 'react';
+import { StyleSheet, Animated } from 'react-native';
+import { GradientHelper } from './gradient-helper';
 
 const styles = StyleSheet.create({
   component: {
-    flex: 1
-  }
+    flex: 1,
+  },
 });
 
 const AnimatedGradientHelper = Animated.createAnimatedComponent(GradientHelper);
 
 export class AnimatedGradient extends Component {
+
   constructor(props) {
     super(props);
 
@@ -18,7 +19,7 @@ export class AnimatedGradient extends Component {
     this.state = {
       prevColors: colors,
       colors,
-      tweener: new Animated.Value(0)
+      tweener: new Animated.Value(0),
     };
   }
 
@@ -29,7 +30,7 @@ export class AnimatedGradient extends Component {
     return {
       prevColors,
       colors,
-      tweener
+      tweener,
     };
   }
 
@@ -49,12 +50,12 @@ export class AnimatedGradient extends Component {
 
     const color1Interp = tweener.interpolate({
       inputRange: [0, 1],
-      outputRange: [prevColors[0], colors[0]]
+      outputRange: [prevColors[0], colors[0]],
     });
 
     const color2Interp = tweener.interpolate({
       inputRange: [0, 1],
-      outputRange: [prevColors[1], colors[1]]
+      outputRange: [prevColors[1], colors[1]],
     });
 
     return (
@@ -67,4 +68,5 @@ export class AnimatedGradient extends Component {
       />
     );
   }
+
 }

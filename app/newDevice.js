@@ -9,9 +9,11 @@ export default function PageDevice() {
   const { id } = useLocalSearchParams();
   if (id) {
     const device = discovery.getDevice(decodeURIComponent(id));
-    if (!device) return (
+    if (!device) {
+      return (
       <Text>Device Not Found</Text>
-    );
+      );
+    }
 
     return (
       <LuxioSetup device={device} />
@@ -22,4 +24,3 @@ export default function PageDevice() {
     <LuxioSetup device={null} />
   );
 }
-

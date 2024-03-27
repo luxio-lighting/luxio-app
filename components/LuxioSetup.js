@@ -1,21 +1,20 @@
 import { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, ScrollView, RefreshControl, Linking } from 'react-native';
+import {
+  View, Text, ActivityIndicator, ScrollView, RefreshControl, Linking, Alert,
+} from 'react-native';
 import TouchableScale from 'react-native-touchable-scale';
 import { router, Stack } from 'expo-router';
 import Dialog from 'react-native-dialog';
-import { FontAwesome5 } from '@expo/vector-icons';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Entypo } from '@expo/vector-icons';
-import { LuxioDiscovery } from 'luxio';
-import alert from '../services/alert';
+import { FontAwesome5, MaterialCommunityIcons, Entypo } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { LuxioDiscovery, LuxioUtil } from '@luxio-lighting/lib';
 
 const STATES = {
   SEARCHING_DEVICE: 'searching_device',
   SCANNING_NETWORKS: 'scanning_networks',
   RESCANNING_NETWORKS: 'rescanning_networks',
   GOT_NETWORKS: 'got_networks',
-  SETTING_NETWORK: 'connecting',
+  CONNECTING: 'connecting',
 };
 
 export default function LuxioSetup(props) {
@@ -32,7 +31,9 @@ export default function LuxioSetup(props) {
     device,
   }) => {
     Promise.resolve().then(async () => {
-      let networks = await device.getWifiNetworks();
+      await device.wifi.scanNetworks();
+      await LuxioUtil.wait(5000);
+      let networks = await device.wifi.getNetworks()
 
       // Sort by RSSI
       networks.sort((a, b) => {
@@ -41,7 +42,7 @@ export default function LuxioSetup(props) {
 
       // Remove Duplicate SSIDs
       const ssids = [];
-      networks = networks.filter(network => {
+      networks = networks.filter((network) => {
         if (ssids.includes(network.ssid)) return false;
         ssids.push(network.ssid);
         return true;
@@ -49,7 +50,7 @@ export default function LuxioSetup(props) {
 
       setNetworks(networks);
       setState(STATES.GOT_NETWORKS);
-    }).catch(alert.error);
+    }).catch(err => Alert.alert('Error Connecting', err.message));
   };
 
   const connectToNetwork = ({
@@ -57,11 +58,14 @@ export default function LuxioSetup(props) {
     ssid,
     pass,
   }) => {
-    Promise.resolve().then(async () => {
-      setState(STATES.SETTING_NETWORK);
-      await device.setWifiNetwork({ ssid, pass });
-    }).catch(alert.error);
-  }
+    console.log('connectToNetwork 1', device, { ssid, pass })
+    device.wifi.connect({ ssid, pass })
+      .then(() => {
+        console.log('connectToNetwork 2')
+        setState(STATES.CONNECTING);
+      })
+      .catch(err => Alert.alert('Error Connecting', err.message));
+  };
 
   useEffect(() => {
     if (props.device) {
@@ -78,7 +82,7 @@ export default function LuxioSetup(props) {
             ap: true,
             nupnp: false,
             mdns: false,
-            timeout: 1000,
+            timeout: 1500,
           });
 
           if (Object.keys(devices).length === 0) return;
@@ -90,8 +94,8 @@ export default function LuxioSetup(props) {
 
           setState(STATES.SCANNING_NETWORKS);
           scanForNetworks({ device });
-        }).catch(alert.error)
-      }, 1200);
+        }).catch(err => Alert.alert('Error', err.message));
+      }, 2000);
 
       return () => clearInterval(pollInterval);
     }
@@ -117,12 +121,13 @@ export default function LuxioSetup(props) {
 
       <Dialog.Container visible={ssidDialogVisible}>
         <Dialog.Title>Hidden Network</Dialog.Title>
-        <Dialog.Description>Enter the Wi-Fi credentials</Dialog.Description>
+        <Dialog.Description>Enter the Wi-Fi credentials.</Dialog.Description>
         <Dialog.Input
           value={ssidDialogValue}
           onChangeText={setSsidDialogValue}
           autoCapitalize="none"
           autoComplete="off"
+          autoFocus={true}
           placeholder='SSID'
         />
         <Dialog.Input
@@ -146,9 +151,7 @@ export default function LuxioSetup(props) {
             connectToNetwork({
               device,
               ssid: ssidDialogValue,
-              pass: passDialogValue
-                ? passDialogValue
-                : null,
+              pass: passDialogValue || null,
             });
           }}
         />
@@ -162,11 +165,13 @@ export default function LuxioSetup(props) {
           onChangeText={setPassDialogValue}
           autoCapitalize="none"
           autoComplete="off"
+          autoFocus={true}
         />
         <Dialog.Button
           label="Cancel"
           onPress={() => {
             setPassDialogVisible(false);
+            setSsidDialogValue('');
           }}
         />
         <Dialog.Button
@@ -336,7 +341,7 @@ export default function LuxioSetup(props) {
                 color: 'white',
                 marginBottom: 36,
               }}
-            >Select the Wi-Fi network that you'd like {device.name} to connect to.</Text>
+            >Please select your Wi-Fi network.</Text>
 
             <ScrollView
               style={{
@@ -352,7 +357,7 @@ export default function LuxioSetup(props) {
                 }}
               />}
             >
-              {networks.map(network => (
+              {networks.map((network) => (
                 <View
                   key={network.ssid}
                   style={{
@@ -369,13 +374,13 @@ export default function LuxioSetup(props) {
                     onPress={() => {
                       setSelectedNetwork(network);
 
-                      if (network.security) {
+                      if (network.encryption) {
                         setSsidDialogValue(network.ssid);
                         setPassDialogVisible(true);
                       } else {
                         connectToNetwork({
                           device,
-                          ssid: selectedNetwork.ssid,
+                          ssid: network.ssid,
                           pass: null,
                         });
                       }
@@ -438,7 +443,7 @@ export default function LuxioSetup(props) {
           </>
         )}
 
-        {state === STATES.SETTING_NETWORK && (
+        {state === STATES.CONNECTING && (
           <>
             <Text
               style={{
@@ -457,7 +462,7 @@ export default function LuxioSetup(props) {
                 marginBottom: 36,
               }}
             >
-              <Text>Luxio is now connecting to </Text>
+              <Text>Luxio is connecting to </Text>
               <MaterialCommunityIcons
                 name="wifi-strength-4"
                 size={18}
@@ -468,7 +473,9 @@ export default function LuxioSetup(props) {
                   fontFamily: 'NunitoBold',
                 }}
               > {ssidDialogValue}</Text>
-              <Text>.{'\n\n'}You can now close this screen.</Text>
+              <Text>
+                {'\n\n'}If the connection was succesful, this Luxio can be found on your Wi-Fi network.
+                {`\n\n`}You can now close this dialog.</Text>
             </Text>
           </>
         )}
