@@ -464,11 +464,7 @@ export default function LuxioDeviceLarge(props) {
 
                 device.led.setGradient({
                   colors: preset.colors,
-                })
-                  .then(() => {
-                    // setGradient(preset.colors.map(LuxioUtil.rgbw2hex));
-                  })
-                  .catch(err => Alert.alert('Error Setting Gradient', err.message));
+                }).catch(err => Alert.alert('Error Setting Gradient', err.message));
               }}
             >
               <LinearGradient
@@ -509,9 +505,6 @@ export default function LuxioDeviceLarge(props) {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
                 device.led.setColor(preset.color)
-                  .then(() => {
-                    setGradient([preset.color, preset.color].map(LuxioUtil.rgbw2hex));
-                  })
                   .catch(err => Alert.alert('Error Setting Color', err.message));
               }}
             >
