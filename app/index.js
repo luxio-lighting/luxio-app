@@ -20,11 +20,11 @@ export default function App() {
     NunitoBold: require('../assets/fonts/Nunito-Bold.ttf'),
   });
 
-  const onLayoutRootView = useCallback(async () => {
+  const onLayoutRootView = async () => {
     if (fontsLoaded) {
       await SplashScreen.hideAsync();
     }
-  }, [fontsLoaded]);
+  }
 
   if (!fontsLoaded) {
     return null;

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Luxio",
     "slug": "luxio",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "scheme": "luxio",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
