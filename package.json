@@ -19,7 +19,7 @@
     "cp:lib": "cp -r ../luxio-lib/ ./node_modules/@luxio-lighting/lib/"
   },
   "dependencies": {
-    "@luxio-lighting/lib": "2.2",
+    "@luxio-lighting/lib": "^2.2.2",
     "@react-native-community/slider": "4.4.2",
     "@shopify/react-native-skia": "0.1.221",
     "expo": "~50.0.14",
