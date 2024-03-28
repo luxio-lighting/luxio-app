@@ -20,6 +20,12 @@
       "bundleIdentifier": "lighting.luxio.ios",
       "config": {
         "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "NSBonjourServices": [
+          "_luxio._tcp"
+        ],
+        "NSLocalNetworkUsageDescription": "This app requires local network access to communicate with Luxio devices."
       }
     },
     "android": {
@@ -27,7 +33,12 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "lighting.luxio.android"
+      "package": "lighting.luxio.android",
+      "permissions": [
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.ACCESS_WIFI_STATE",
+        "android.permission.CHANGE_WIFI_MULTICAST_STATE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"

@@ -8,6 +8,7 @@ import * as Haptics from 'expo-haptics';
 import discovery from '../services/discovery.js';
 
 import LuxioDeviceSmall from './LuxioDeviceSmall.js';
+import { LuxioGradient } from './LuxioGradient.js';
 
 export default function LuxioDevices() {
   const [devices, setDevices] = useState(null);
@@ -22,10 +23,10 @@ export default function LuxioDevices() {
     if (Object.keys(devices).length > 0) {
       setDevices({ ...devices });
     } else {
-      setTimeout(() => {
-        const devices = discovery.getDevices();
-        setDevices({ ...devices });
-      }, 5000); // Show 'No Luxios Found' after 5 seconds
+      // setTimeout(() => {
+      //   const devices = discovery.getDevices();
+      //   setDevices({ ...devices });
+      // }, 5000); // Show 'No Luxios Found' after 5 seconds
     }
   }, []);
 
@@ -103,9 +104,15 @@ export default function LuxioDevices() {
               color: 'white',
               marginBottom: 24,
               textAlign: 'center',
-
             }}
           >Searching for Luxios on Wi-Fi...</Text>
+          <View
+            style={{
+              width: 400,
+              height: 500,
+            }}
+          >
+          </View>
         </View>
       )}
 

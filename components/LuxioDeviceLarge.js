@@ -9,6 +9,7 @@ import { useHeaderHeight } from '@react-navigation/elements';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import LuxioUtil from '../lib/LuxioUtil.js';
+import LuxioGradient from './LuxioGradient.js';
 
 const PRESETS_EFFECTS = [
   {
@@ -373,7 +374,7 @@ export default function LuxioDeviceLarge(props) {
           backgroundColor: '#000',
         }}
       >
-        <LinearGradient
+        <LuxioGradient
           style={{
             position: 'absolute',
             width: '100%',
@@ -383,8 +384,6 @@ export default function LuxioDeviceLarge(props) {
               : 0,
           }}
           colors={gradient}
-          start={[0, 0]}
-          end={[1, 1]}
         />
         <LinearGradient
           style={{
@@ -467,7 +466,7 @@ export default function LuxioDeviceLarge(props) {
                   colors: preset.colors,
                 })
                   .then(() => {
-                    setGradient(preset.colors.map(LuxioUtil.rgbw2hex));
+                    // setGradient(preset.colors.map(LuxioUtil.rgbw2hex));
                   })
                   .catch(err => Alert.alert('Error Setting Gradient', err.message));
               }}

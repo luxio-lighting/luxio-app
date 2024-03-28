@@ -10,8 +10,8 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import alert from '../services/alert.js';
 import { LinearGradient } from 'expo-linear-gradient';
-import { AnimatedGradient } from './AnimatedGradient';
 import LuxioUtil from '../lib/LuxioUtil.js';
+import LuxioGradient from './LuxioGradient.js';
 import { LuxioDiscoveryStrategyAP } from '@luxio-lighting/lib';
 
 export default function LuxioDeviceSmall(props) {
@@ -165,7 +165,37 @@ export default function LuxioDeviceSmall(props) {
             backgroundColor: '#333333',
           }, animatedContainerStyle]}
         >
-          <AnimatedGradient
+          <LuxioGradient
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0,
+              borderRadius: 16,
+              overflow: 'hidden',
+            }}
+            colors={on
+              ? gradient
+              : ['#000000', '#000000']}
+          />
+          <LinearGradient
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              borderRadius: 16,
+              padding: 24,
+              height: '100%',
+            }}
+            colors={connected
+              ? ['#00000000', '#00000099']
+              : ['#00000000', '#00000000']
+            }
+            start={[0, 0]}
+            end={[0, 1]}
+          />
+          {/* <AnimatedGradient
             style={{
               borderRadius: 16,
               ...isHotspot
@@ -183,106 +213,91 @@ export default function LuxioDeviceSmall(props) {
             }
             start={[0, 1]}
             end={[1, 1]}
-          />
-          <LinearGradient
+          /> */}
+          <View
             style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              borderRadius: 16,
+              flex: 1,
+              flexDirection: 'row',
+              flexShrink: 0,
               padding: 24,
-              height: '100%',
             }}
-            colors={connected
-              ? ['#00000000', '#00000099']
-              : ['#00000000', '#00000000']
-            }
-            start={[0, 0]}
-            end={[0, 1]}
           >
             <View
               style={{
-                flex: 1,
-                flexDirection: 'row',
+                flexGrow: 1,
+              }}
+            >
+              <Text
+                style={{
+                  color: '#fff',
+                  fontFamily: 'NunitoBold',
+                  fontSize: 22,
+                  textShadowColor: '#00000033',
+                  textShadowRadius: 4,
+                  textShadowOffset: {
+                    width: 0,
+                    height: 1,
+                  },
+                }}
+              >{name}</Text>
+            </View>
+
+            <View
+              style={{
                 flexShrink: 0,
               }}
             >
-              <View
-                style={{
-                  flexGrow: 1,
-                }}
-              >
-                <Text
+              {!connected && (
+                <View
                   style={{
-                    color: '#fff',
-                    fontFamily: 'NunitoBold',
-                    fontSize: 22,
-                    textShadowColor: '#00000033',
-                    textShadowRadius: 4,
-                    textShadowOffset: {
-                      width: 0,
-                      height: 1,
-                    },
+                    width: 50,
+                    height: 30,
+                    borderRadius: 100,
+                    backgroundColor: '#ffffff33',
                   }}
-                >{name}</Text>
-              </View>
+                />
+              )}
+              {connected && (
+                <Switch
+                  value={on}
+                  onValueChange={(value) => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setOn(value);
 
-              <View
-                style={{
-                  flexShrink: 0,
-                }}
-              >
-                {!connected && (
-                  <View
-                    style={{
-                      width: 50,
-                      height: 30,
-                      borderRadius: 100,
-                      backgroundColor: '#ffffff33',
-                    }}
-                  />
-                )}
-                {connected && (
-                  <Switch
-                    value={on}
-                    onValueChange={(value) => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      setOn(value);
-
-                      device.led.setOn({
-                        on: !!value,
-                      });
-                    }}
-                    trackColor={{
-                      false: '#ffffff33',
-                      true: '#ffffff33',
-                    }}
-                    {...Platform.OS === 'ios' && ({
-                      ios_backgroundColor: '#ffffff33',
-                    })}
-                    {...Platform.OS === 'android' && ({
-                      thumbColor: '#ffffff',
-                      style: {
-                        marginTop: -8,
-                      },
-                    })}
-                  />
-                )}
-              </View>
+                    device.led.setOn({
+                      on: !!value,
+                    });
+                  }}
+                  trackColor={{
+                    false: '#ffffff33',
+                    true: '#ffffff33',
+                  }}
+                  {...Platform.OS === 'ios' && ({
+                    ios_backgroundColor: '#ffffff33',
+                  })}
+                  {...Platform.OS === 'android' && ({
+                    thumbColor: '#ffffff',
+                    style: {
+                      marginTop: -8,
+                    },
+                  })}
+                />
+              )}
             </View>
-            {connected && (
-              <Animated.View
-                style={[{
-                  pointerEvents: on
-                    ? 'auto'
-                    : 'none',
-                  position: 'absolute',
-                  left: 24,
-                  right: 24,
-                  top: 64,
-                }, animatedSliderStyle]}
-              >
-                {/* <LinearGradient
+          </View>
+          {connected && (
+            <Animated.View
+              style={[{
+                pointerEvents: on
+                  ? 'auto'
+                  : 'none',
+                position: 'absolute',
+                left: 24,
+                right: 24,
+                top: 64,
+              }, animatedSliderStyle]}
+            >
+              {/* <LinearGradient
                   colors={['#FFFFFF00', '#FFFFFFFF', '#00000000', '#00000000']}
                   start={[0, 0]}
                   end={[1, 0]}
@@ -292,25 +307,25 @@ export default function LuxioDeviceSmall(props) {
                     borderRadius: 16,
                   }}
                 > */}
-                <Slider
-                  style={{
-                    height: 32,
-                  }}
-                  onValueChange={(value) => {
-                    setBrightnessThrottled(value);
-                  }}
-                  minimumValue={10}
-                  maximumValue={255}
-                  step={1}
-                  tapToSeek={true}
-                  value={brightness}
-                  minimumTrackTintColor="#FFFFFFAA"
-                  maximumTrackTintColor="#FFFFFF33"
-                />
-                {/* </LinearGradient> */}
-              </Animated.View>
-            )}
-          </LinearGradient>
+              <Slider
+                style={{
+                  height: 32,
+                }}
+                onValueChange={(value) => {
+                  setBrightnessThrottled(value);
+                }}
+                minimumValue={10}
+                maximumValue={255}
+                step={1}
+                tapToSeek={true}
+                value={brightness}
+                minimumTrackTintColor="#FFFFFFAA"
+                maximumTrackTintColor="#FFFFFF33"
+              />
+              {/* </LinearGradient> */}
+            </Animated.View>
+          )}
+          {/* </LinearGradient> */}
         </Animated.View>
       </TouchableScale>
     </>
