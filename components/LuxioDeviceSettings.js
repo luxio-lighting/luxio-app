@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import {
-  StyleSheet, View, Text, Alert, ScrollView, TouchableOpacity, Button,
-} from 'react-native';
+import { StyleSheet, View, Text, Alert, ScrollView, TouchableOpacity, Button } from 'react-native';
 import { router, Stack } from 'expo-router';
 import Dialog from 'react-native-dialog';
 import { Ionicons, Feather } from '@expo/vector-icons';

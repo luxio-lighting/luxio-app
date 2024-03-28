@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Text, View, Switch, Platform, Alert } from 'react-native';
+import { Text, View, Switch, Platform, Alert, TouchableOpacity } from 'react-native';
 import Slider from '@react-native-community/slider';
 import TouchableScale from 'react-native-touchable-scale';
 import { router } from 'expo-router';
@@ -7,7 +7,6 @@ import Animated, { withTiming, useAnimatedStyle, Easing } from 'react-native-rea
 import * as Haptics from 'expo-haptics';
 import lodash from 'lodash';
 import { FontAwesome5 } from '@expo/vector-icons';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import LuxioUtil from '../lib/LuxioUtil.js';
 import LuxioGradient from './LuxioGradient.js';
@@ -172,6 +171,12 @@ export default function LuxioDeviceSmall(props) {
               top: 0,
               bottom: 0,
               borderRadius: 16,
+              ...isHotspot
+                ? {
+                  borderTopLeftRadius: 0,
+                  borderTopRightRadius: 0,
+                }
+                : {},
               overflow: 'hidden',
             }}
             colors={on
@@ -184,6 +189,12 @@ export default function LuxioDeviceSmall(props) {
               left: 0,
               right: 0,
               borderRadius: 16,
+              ...isHotspot
+                ? {
+                  borderTopLeftRadius: 0,
+                  borderTopRightRadius: 0,
+                }
+                : {},
               padding: 24,
               height: '100%',
             }}

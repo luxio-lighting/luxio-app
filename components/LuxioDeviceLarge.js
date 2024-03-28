@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
-import {
-  StyleSheet, View, Text, TouchableOpacity, ScrollView, Alert,
-} from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import TouchableScale from 'react-native-touchable-scale';

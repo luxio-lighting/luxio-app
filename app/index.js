@@ -1,10 +1,6 @@
-import { useCallback } from 'react';
 import { View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import {
-  SafeAreaProvider,
-  SafeAreaView,
-} from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';

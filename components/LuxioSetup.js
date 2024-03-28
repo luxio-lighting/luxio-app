@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react';
-import {
-  View, Text, ActivityIndicator, ScrollView, RefreshControl, Linking, Alert,
-} from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView, RefreshControl, Linking, Alert, TouchableOpacity } from 'react-native';
 import TouchableScale from 'react-native-touchable-scale';
 import { router, Stack } from 'expo-router';
 import Dialog from 'react-native-dialog';
 import { Ionicons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import { LuxioDiscovery, LuxioUtil } from '@luxio-lighting/lib';
 
 const STATES = {
@@ -58,10 +55,8 @@ export default function LuxioSetup(props) {
     ssid,
     pass,
   }) => {
-    console.log('connectToNetwork 1', device, { ssid, pass })
     device.wifi.connect({ ssid, pass })
       .then(() => {
-        console.log('connectToNetwork 2')
         setState(STATES.CONNECTING);
       })
       .catch(err => Alert.alert('Error Connecting', err.message));

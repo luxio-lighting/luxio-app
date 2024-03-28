@@ -10,7 +10,7 @@ export default function PageDevice() {
   const device = discovery.getDevice(decodeURIComponent(id));
   if (!device) {
     return (
-    <Text>Device Not Found</Text>
+      <Text>Device Not Found</Text>
     );
   }
 
