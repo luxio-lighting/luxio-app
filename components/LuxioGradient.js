@@ -11,6 +11,7 @@ import {
 import {
   withTiming,
   useSharedValue,
+  cancelAnimation,
 } from 'react-native-reanimated';
 
 export default function LuxioGradient({
@@ -26,6 +27,8 @@ export default function LuxioGradient({
   const foregroundOpacity = useSharedValue(1);
 
   useEffect(() => {
+    cancelAnimation(foregroundOpacity);
+
     // Take a snapshot of the canvas, and set that as background
     try {
       const snapshot = canvasRef.current?.makeImageSnapshot();
@@ -39,7 +42,7 @@ export default function LuxioGradient({
 
     // Animated foregroundOpacity to 100%
     foregroundOpacity.value = 0;
-    foregroundOpacity.value = withTiming(1, { duration: 400 });
+    foregroundOpacity.value = withTiming(1, { duration: 300 });
   }, [colors]);
 
   return (

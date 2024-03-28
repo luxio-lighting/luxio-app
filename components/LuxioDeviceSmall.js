@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Text, View, Switch, Platform } from 'react-native';
+import { Text, View, Switch, Platform, Alert } from 'react-native';
 import Slider from '@react-native-community/slider';
 import TouchableScale from 'react-native-touchable-scale';
 import { router } from 'expo-router';
@@ -8,7 +8,6 @@ import * as Haptics from 'expo-haptics';
 import lodash from 'lodash';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import alert from '../services/alert.js';
 import { LinearGradient } from 'expo-linear-gradient';
 import LuxioUtil from '../lib/LuxioUtil.js';
 import LuxioGradient from './LuxioGradient.js';
@@ -47,8 +46,8 @@ export default function LuxioDeviceSmall(props) {
 
       device.led.setBrightness({
         brightness: value,
-      }).catch((error) => {
-        alert.error(error);
+      }).catch(err => {
+        Alert.alert('Error Setting Brightness', err.message);
       });
     }, 200);
   }, []);
@@ -75,8 +74,8 @@ export default function LuxioDeviceSmall(props) {
         setName(device.system.config?.name);
         setLedState(device.led.state);
       })
-      .catch((error) => {
-        alert.error(error);
+      .catch(err => {
+        Alert.alert('Error Connecting', err.message);
       });
 
     device.addEventListener('led.state', (state) => {
