@@ -120,7 +120,7 @@ export default function LuxioDevices() {
           }}
         >
           <Ionicons
-            name="ios-warning-outline"
+            name="warning-outline"
             size={42}
             color="white"
             style={{

@@ -5,7 +5,7 @@ import {
 import TouchableScale from 'react-native-touchable-scale';
 import { router, Stack } from 'expo-router';
 import Dialog from 'react-native-dialog';
-import { FontAwesome5, MaterialCommunityIcons, Entypo } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { LuxioDiscovery, LuxioUtil } from '@luxio-lighting/lib';
 
@@ -112,7 +112,7 @@ export default function LuxioSetup(props) {
                   router.back();
                 }}
               >
-                <Entypo name='chevron-down' size={32} color='white' />
+                <Ionicons name='chevron-down' size={24} color='white' />
               </TouchableOpacity>
             );
           },

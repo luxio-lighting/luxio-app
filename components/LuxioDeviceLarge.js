@@ -3,7 +3,7 @@ import {
   StyleSheet, View, Text, TouchableOpacity, ScrollView, Alert,
 } from 'react-native';
 import { router, Stack } from 'expo-router';
-import { Ionicons, Entypo } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import TouchableScale from 'react-native-touchable-scale';
 import { useHeaderHeight } from '@react-navigation/elements';
 import * as Haptics from 'expo-haptics';
@@ -339,7 +339,7 @@ export default function LuxioDeviceLarge(props) {
                   router.back();
                 }}
               >
-                <Entypo name='chevron-down' size={32} color='white' />
+                <Ionicons name='chevron-down' size={24} color='white' />
               </TouchableOpacity>
             );
           },
@@ -356,7 +356,7 @@ export default function LuxioDeviceLarge(props) {
                   });
                 }}
               >
-                <Ionicons name='ios-settings-outline' size={24} color='white' />
+                <Ionicons name='settings-outline' size={24} color='white' />
               </TouchableOpacity>
             );
           },

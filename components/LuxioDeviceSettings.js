@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import { router, Stack } from 'expo-router';
 import Dialog from 'react-native-dialog';
-import { Entypo, Feather } from '@expo/vector-icons';
+import { Ionicons, Feather } from '@expo/vector-icons';
 import { useHeaderHeight } from '@react-navigation/elements';
 
 export default function LuxioDeviceSettings(props) {
@@ -33,7 +33,7 @@ export default function LuxioDeviceSettings(props) {
                   router.back();
                 }}
               >
-                <Entypo name='chevron-down' size={32} color='white' />
+                <Ionicons name='chevron-down' size={24} color='white' />
               </TouchableOpacity>
             );
           },
