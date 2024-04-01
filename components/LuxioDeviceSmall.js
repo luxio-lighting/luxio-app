@@ -20,6 +20,7 @@ export default function LuxioDeviceSmall(props) {
   const [on, setOn] = useState(device.led.state?.on ?? false);
   const [brightness, setBrightness] = useState(device.led.state?.brightness ?? null);
   const [gradient, setGradient] = useState(device.led.state?.colors ?? ['#222222', '#333333']);
+  const [error, setError] = useState(null);
 
   const animatedContainerStyle = useAnimatedStyle(() => {
     return {
@@ -67,6 +68,11 @@ export default function LuxioDeviceSmall(props) {
   };
 
   useEffect(() => {
+    if (device.version < 200) {
+      setError(`This Luxio's firmware (v${device.version}) is outdated.\n\nPlease update the firmware from a Mac or PC on https://flash.luxio.lighting.`);
+      return;
+    }
+
     device.connect()
       .then(() => {
         setConnected(true);
@@ -74,7 +80,8 @@ export default function LuxioDeviceSmall(props) {
         setLedState(device.led.state);
       })
       .catch(err => {
-        Alert.alert('Error Connecting', err.message);
+        setError(err.message);
+        // Alert.alert('Error Connecting', err.message);
       });
 
     device.addEventListener('led.state', (state) => {
@@ -83,6 +90,67 @@ export default function LuxioDeviceSmall(props) {
   }, []);
 
   const isHotspot = device.address === LuxioDiscoveryStrategyAP.ADDRESS;
+
+  if (error) {
+    return <>
+      <View
+        style={{
+          flex: 1,
+          marginHorizontal: 24,
+          marginBottom: 24,
+          shadowColor: '#000',
+          shadowOpacity: 0.3,
+          shadowOffset: {
+            width: 0,
+            height: 12,
+          },
+          shadowRadius: 12,
+          borderRadius: 16,
+          backgroundColor: '#CC6633',
+          padding: 24,
+        }}
+      >
+        <View
+          style={{
+            flexGrow: 1,
+          }}
+        >
+          <Text
+            style={{
+              color: '#fff',
+              fontFamily: 'NunitoBold',
+              fontSize: 22,
+              textShadowColor: '#00000033',
+              textShadowRadius: 4,
+              textShadowOffset: {
+                width: 0,
+                height: 1,
+              },
+            }}
+          >{name}</Text>
+        </View>
+        <View
+          style={{
+            marginTop: 12,
+            marginHorizontal: -12,
+            marginBottom: -12,
+            backgroundColor: '#ffffff22',
+            borderRadius: 8,
+            padding: 12,
+          }}
+        >
+          <Text
+            style={{
+              color: '#ffffff',
+              fontSize: 16,
+              fontWeight: 500,
+            }}
+          >{error}</Text>
+        </View>
+      </View>
+
+    </>
+  }
 
   // Render
   return (
