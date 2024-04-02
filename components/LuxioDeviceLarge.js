@@ -293,9 +293,9 @@ export default function LuxioDeviceLarge(props) {
 
   const [connected, setConnected] = useState(device.isConnected());
   const [name, setName] = useState(device.name);
-  const [on, setOn] = useState(device.led.state?.on ?? false);
-  const [brightness, setBrightness] = useState(device.led.state?.brightness ?? null);
-  const [gradient, setGradient] = useState(device.led.state?.colors ?? ['#222222', '#333333']);
+  const [on, setOn] = useState(false);
+  const [brightness, setBrightness] = useState(null);
+  const [gradient, setGradient] = useState(['#222222', '#333333']);
 
   const setLedState = (ledState) => {
     // On
