@@ -11,6 +11,7 @@ export default function LuxioSlider({
   max = 255,
   value = 0,
   onValueChange = () => { },
+  style = {},
 }) {
   const viewRef = useRef(null);
 
@@ -69,6 +70,7 @@ export default function LuxioSlider({
       {...panResponder.panHandlers}
       ref={viewRef}
       style={{
+        ...style,
         height: 32,
       }}
     >

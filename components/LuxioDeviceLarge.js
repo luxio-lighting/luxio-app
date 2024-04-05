@@ -6,7 +6,7 @@ import TouchableScale from 'react-native-touchable-scale';
 import { useHeaderHeight } from '@react-navigation/elements';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import Animated, { Easing, FadeIn, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import lodash from 'lodash';
 
 import LuxioUtil from '../lib/LuxioUtil.js';
@@ -301,6 +301,17 @@ export default function LuxioDeviceLarge(props) {
   const [brightness, setBrightness] = useState(null);
   const [gradient, setGradient] = useState(null);
 
+  const animatedContainerStyle = useAnimatedStyle(() => {
+    return {
+      // height: withTiming(on ? 32 : 0, {
+      //   duration: 300,
+      // }),
+      opacity: withTiming(on ? 1 : 0, {
+        duration: 300,
+      }),
+    };
+  });
+
   const setLedState = (ledState) => {
     // On
     const { on } = ledState;
@@ -469,19 +480,26 @@ export default function LuxioDeviceLarge(props) {
         }}
       />
 
-      <LuxioSlider
-        min={10}
-        max={255}
-        value={brightness}
-        onValueChange={value => {
-          setBrightnessThrottled(value);
-        }}
-      />
+      <Animated.View
+        style={[{
+          marginBottom: 12,
+          overflow: 'hidden',
+        }, animatedContainerStyle]}
+      >
+        <LuxioSlider
+          min={10}
+          max={255}
+          value={brightness}
+          onValueChange={value => {
+            setBrightnessThrottled(value);
+          }}
+        />
+      </Animated.View>
 
       <ScrollView
         style={{
           height: '100%',
-          padding: 24,
+          padding: 12,
         }}
       >
         {/* <Text
@@ -547,22 +565,20 @@ export default function LuxioDeviceLarge(props) {
                   }).catch(err => Alert.alert('Error Setting Gradient', err.message));
                 }}
               >
-                <LinearGradient
-                  colors={preset.colors.map(LuxioUtil.rgbw2hex)}
-                  start={[0, 0]}
-                  end={[1, 1]}
-                  style={styles.presetIcon}
-                >
+                <View style={styles.presetIconWrap}>
                   <LinearGradient
-                    style={{
-                      height: '100%',
-                      borderRadius: 36,
-                    }}
+                    style={styles.presetIconPreview}
+                    colors={preset.colors.map(LuxioUtil.rgbw2hex)}
+                    start={[0, 0]}
+                    end={[1, 1]}
+                  />
+                  <LinearGradient
+                    style={styles.presetIconOverlay}
                     colors={['#00000000', '#00000033']}
                     start={[0, 0]}
                     end={[1, 1]}
                   />
-                </LinearGradient>
+                </View>
                 <Text
                   style={styles.presetText}
                 >{preset.name}</Text>
@@ -592,23 +608,21 @@ export default function LuxioDeviceLarge(props) {
                     .catch(err => Alert.alert('Error Setting Color', err.message));
                 }}
               >
-                <LinearGradient
-                  colors={[
-                    LuxioUtil.rgbw2hex(preset.color),
-                    LuxioUtil.rgbw2hex(preset.color),
-                  ]}
-                  style={styles.presetIcon}
-                >
+                <View style={styles.presetIconWrap}>
                   <LinearGradient
-                    style={{
-                      height: '100%',
-                      borderRadius: 36,
-                    }}
+                    style={styles.presetIconPreview}
+                    colors={[
+                      LuxioUtil.rgbw2hex(preset.color),
+                      LuxioUtil.rgbw2hex(preset.color),
+                    ]}
+                  />
+                  <LinearGradient
+                    style={styles.presetIconOverlay}
                     colors={['#00000022', '#00000044']}
                     start={[0, 0]}
                     end={[1, 1]}
                   />
-                </LinearGradient>
+                </View>
                 <Text
                   style={styles.presetText}
                 >{preset.name}</Text>
@@ -627,6 +641,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontFamily: 'NunitoBold',
     fontSize: 28,
+    marginHorizontal: 12,
     marginBottom: 12,
     textShadowColor: '#00000033',
     textShadowRadius: 4,
@@ -643,10 +658,15 @@ const styles = StyleSheet.create({
   },
   presetContainer: {
     marginBottom: 32,
-    width: '33.3%',
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-    borderColor: '#00000033',
+    width: '33.333%',
+  },
+  presetIconWrap: {
+    position: 'absolute',
+    left: '50%',
+    marginLeft: -72 / 2,
+    width: 72,
+    height: 72,
+    backgroundColor: '#000000',
     shadowColor: '#000000',
     shadowOpacity: 0.35,
     shadowOffset: {
@@ -654,14 +674,22 @@ const styles = StyleSheet.create({
       height: 10,
     },
     shadowRadius: 12,
+    borderRadius: 36,
   },
-  presetIcon: {
+  presetIconPreview: {
+    position: 'absolute',
     width: 72,
     height: 72,
     borderRadius: 36,
-    marginBottom: 12,
+  },
+  presetIconOverlay: {
+    position: 'absolute',
+    width: 72,
+    height: 72,
+    borderRadius: 36,
   },
   presetText: {
+    marginTop: 72 + 12,
     color: '#fff',
     fontFamily: 'NunitoBold',
     fontSize: 16,
