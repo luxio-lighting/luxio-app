@@ -268,24 +268,28 @@ const PRESET_COLORS = [
   },
   {
     name: 'RGBW White',
+    rgbw: true,
     color: {
       r: 0, g: 0, b: 0, w: 255,
     },
   },
   {
     name: 'RGB+W White',
+    rgbw: true,
     color: {
       r: 255, g: 255, b: 255, w: 255,
     },
   },
   {
     name: 'Warm White',
+    rgbw: true,
     color: {
       r: 255, g: 0, b: 0, w: 255,
     },
   },
   {
     name: 'Cool White',
+    rgbw: true,
     color: {
       r: 0, g: 0, b: 255, w: 255,
     },
@@ -300,6 +304,7 @@ export default function LuxioDeviceLarge(props) {
   const [on, setOn] = useState(false);
   const [brightness, setBrightness] = useState(null);
   const [gradient, setGradient] = useState(null);
+  const [type, setType] = useState(null);
 
   const animatedContainerStyle = useAnimatedStyle(() => {
     return {
@@ -327,6 +332,12 @@ export default function LuxioDeviceLarge(props) {
     setGradient(gradient);
   };
 
+  const setLedConfig = (ledConfig) => {
+    // Type
+    const { type } = ledConfig;
+    setType(type);
+  };
+
   const setBrightnessThrottled = useMemo(() => {
     return lodash.throttle((value) => {
       setBrightness(value);
@@ -345,11 +356,16 @@ export default function LuxioDeviceLarge(props) {
         setConnected(true);
         setName(device.system.config?.name);
         setLedState(device.led.state);
+        setLedConfig(device.led.config);
       })
       .catch(err => Alert.alert('Error Connecting', err.message));
 
     device.addEventListener('led.state', (state) => {
       setLedState(state);
+    });
+
+    device.addEventListener('led.config', (config) => {
+      setLedConfig(config);
     });
   }, []);
 
@@ -593,42 +609,47 @@ export default function LuxioDeviceLarge(props) {
         <View
           style={styles.presetsContainer}
         >
-          {PRESET_COLORS.map((preset, i) =>
-            <Animated.View
-              key={`color-${preset.name}`}
-              entering={FadeIn.duration(200).delay((Object.keys(PRESET_GRADIENTS).length + i) * 50)}
-              style={styles.presetContainer}
-            >
-              <TouchableScale
-                activeScale={0.95}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-                  device.led.setColor(preset.color)
-                    .catch(err => Alert.alert('Error Setting Color', err.message));
-                }}
+          {PRESET_COLORS
+            .filter(preset => {
+              if (preset.rgbw && type !== 'SK6812') return false;
+              return true;
+            })
+            .map((preset, i) =>
+              <Animated.View
+                key={`color-${preset.name}`}
+                entering={FadeIn.duration(200).delay((Object.keys(PRESET_GRADIENTS).length + i) * 50)}
+                style={styles.presetContainer}
               >
-                <View style={styles.presetIconWrap}>
-                  <LinearGradient
-                    style={styles.presetIconPreview}
-                    colors={[
-                      LuxioUtil.rgbw2hex(preset.color),
-                      LuxioUtil.rgbw2hex(preset.color),
-                    ]}
-                  />
-                  <LinearGradient
-                    style={styles.presetIconOverlay}
-                    colors={['#00000022', '#00000044']}
-                    start={[0, 0]}
-                    end={[1, 1]}
-                  />
-                </View>
-                <Text
-                  style={styles.presetText}
-                >{preset.name}</Text>
-              </TouchableScale>
-            </Animated.View>
-          )}
+                <TouchableScale
+                  activeScale={0.95}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+                    device.led.setColor(preset.color)
+                      .catch(err => Alert.alert('Error Setting Color', err.message));
+                  }}
+                >
+                  <View style={styles.presetIconWrap}>
+                    <LinearGradient
+                      style={styles.presetIconPreview}
+                      colors={[
+                        LuxioUtil.rgbw2hex(preset.color),
+                        LuxioUtil.rgbw2hex(preset.color),
+                      ]}
+                    />
+                    <LinearGradient
+                      style={styles.presetIconOverlay}
+                      colors={['#00000022', '#00000044']}
+                      start={[0, 0]}
+                      end={[1, 1]}
+                    />
+                  </View>
+                  <Text
+                    style={styles.presetText}
+                  >{preset.name}</Text>
+                </TouchableScale>
+              </Animated.View>
+            )}
         </View>
 
       </ScrollView >
