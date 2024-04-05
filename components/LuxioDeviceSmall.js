@@ -323,7 +323,7 @@ export default function LuxioDeviceSmall(props) {
 
                     device.led.setOn({
                       on: !!value,
-                    });
+                    }).catch(err => Alert.alert('Error', err.message));
                   }}
                   trackColor={{
                     false: '#ffffff33',

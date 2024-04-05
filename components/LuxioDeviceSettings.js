@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, Alert, ScrollView, TouchableOpacity, Button } from 'react-native';
 import { router, Stack } from 'expo-router';
 import Dialog from 'react-native-dialog';
@@ -17,6 +17,29 @@ export default function LuxioDeviceSettings(props) {
   const [pixelsDialogSaving, setPixelsDialogSaving] = useState(false);
   const [pixelsDialogValue, setPixelsDialogValue] = useState(String(device.led.config?.count ?? '-'));
   const [pixels, setPixels] = useState(device.led.config.count);
+
+  const [typeDialogVisible, setTypeDialogVisible] = useState(false);
+  const [typeDialogSaving, setTypeDialogSaving] = useState(false);
+  const [type, setType] = useState(device.led.config.type);
+
+  useEffect(() => {
+    device.connect()
+      .then(() => {
+        setName(device.system.config?.name);
+        setPixels(device.led.config?.count);
+        setType(device.led.config?.type);
+      })
+      .catch(err => Alert.alert('Error Connecting', err.message));
+
+    device.addEventListener('system.config', (config) => {
+      setName(config?.name);
+    });
+
+    device.addEventListener('led.config', (config) => {
+      setPixels(config?.count);
+      setType(config?.type);
+    });
+  }, []);
 
   return (
     <>
@@ -75,12 +98,66 @@ export default function LuxioDeviceSettings(props) {
       </Dialog.Container>
 
       <Dialog.Container visible={pixelsDialogVisible}>
-        <Dialog.Title>Pixels</Dialog.Title>
-        <Dialog.Input
-          value={pixelsDialogValue}
-          onChangeText={setPixelsDialogValue}
-          autoFocus={true}
-        />
+        <Dialog.Title>Number of LEDs</Dialog.Title>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 8,
+            marginBottom: 24,
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => {
+              let value = Number(pixelsDialogValue);
+              if (isNaN(value)) value = 0;
+              value = value - 1;
+              if (value < 1) value = 1;
+
+              setPixelsDialogValue(String(value));
+              setPixelsDialogSaving(true);
+
+              device.led.setCount({
+                count: value,
+              })
+                .catch(err => Alert.alert('Error Saving', err.message))
+                .finally(() => setPixelsDialogSaving(false));
+            }}
+          >
+            <Ionicons name='remove-circle-outline' size={24} color='#aaa' />
+          </TouchableOpacity>
+
+          <Dialog.Input
+            value={pixelsDialogValue}
+            onChangeText={setPixelsDialogValue}
+            autoFocus={true}
+            wrapperStyle={{
+              flexGrow: 1,
+              marginHorizontal: 8,
+              marginBottom: 0,
+            }}
+          />
+
+          <TouchableOpacity
+            onPress={() => {
+              let value = Number(pixelsDialogValue);
+              if (isNaN(value)) value = 0;
+              value = value + 1;
+              if (value < 1) value = 1;
+
+              setPixelsDialogValue(String(value));
+
+              device.led.setCount({
+                count: value,
+              })
+                .catch(err => Alert.alert('Error Saving', err.message))
+                .finally(() => setPixelsDialogSaving(false));
+            }}
+          >
+            <Ionicons name='add-circle-outline' size={24} color='#aaa' />
+          </TouchableOpacity>
+
+        </View>
         <Dialog.Button
           label="Cancel"
           onPress={() => {
@@ -91,6 +168,11 @@ export default function LuxioDeviceSettings(props) {
           label={pixelsDialogSaving ? 'Saving...' : 'Save'}
           disabled={pixelsDialogSaving === true}
           bold={true}
+          style={{
+            opacity: pixelsDialogSaving
+              ? 0.5
+              : 1
+          }}
           onPress={() => {
             setPixelsDialogSaving(true);
             device.led.setCount({
@@ -103,6 +185,47 @@ export default function LuxioDeviceSettings(props) {
               .catch((err) => Alert.alert('Error Saving', err.message))
               .finally(() => {
                 setPixelsDialogSaving(false);
+              });
+          }}
+        />
+      </Dialog.Container>
+
+      <Dialog.Container
+        visible={typeDialogVisible}
+        verticalButtons={true}
+      >
+        <Dialog.Title>LED Type</Dialog.Title>
+        <Dialog.Button
+          label="WS2812 (RGB)"
+          bold={type === 'WS2812'}
+          onPress={() => {
+            if (typeDialogSaving) return;
+
+            setTypeDialogSaving(true);
+            device.led.setType({
+              type: 'WS2812',
+            })
+              .catch(err => Alert.alert('Error Saving', err.message))
+              .finally(() => {
+                setTypeDialogSaving(false);
+                setTypeDialogVisible(false);
+              });
+          }}
+        />
+        <Dialog.Button
+          label="SK6812 (RGBW)"
+          bold={type === 'SK6812'}
+          onPress={() => {
+            if (typeDialogSaving) return;
+
+            setTypeDialogSaving(true);
+            device.led.setType({
+              type: 'SK6812',
+            })
+              .catch(err => Alert.alert('Error Saving', err.message))
+              .finally(() => {
+                setTypeDialogSaving(false);
+                setTypeDialogVisible(false);
               });
           }}
         />
@@ -141,7 +264,7 @@ export default function LuxioDeviceSettings(props) {
 
         <View style={styles.rowContainer}>
           <View style={styles.rowContainerValue}>
-            <Text style={styles.rowLabel}>Pixels</Text>
+            <Text style={styles.rowLabel}>LED Count</Text>
             <Text style={styles.rowValue}>{String(pixels ?? '-')}</Text>
           </View>
           <View style={styles.rowContainerEdit}>
@@ -157,7 +280,23 @@ export default function LuxioDeviceSettings(props) {
 
         <View style={styles.rowContainer}>
           <View style={styles.rowContainerValue}>
-            <Text style={styles.rowLabel}>Firmware</Text>
+            <Text style={styles.rowLabel}>LED Type</Text>
+            <Text style={styles.rowValue}>{device.led.config.type ?? '-'}</Text>
+          </View>
+          <View style={styles.rowContainerEdit}>
+            <TouchableOpacity
+              onPress={() => {
+                setTypeDialogVisible(true);
+              }}
+            >
+              <Feather name="edit" size={18} color="white" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.rowContainer}>
+          <View style={styles.rowContainerValue}>
+            <Text style={styles.rowLabel}>Firmware Version</Text>
             <Text style={styles.rowValue}>{device.system.state.version ?? '-'}</Text>
           </View>
         </View>

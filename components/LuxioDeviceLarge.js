@@ -1,13 +1,17 @@
-import { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { useState, useEffect, useMemo } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, Alert, Switch, Platform } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import TouchableScale from 'react-native-touchable-scale';
 import { useHeaderHeight } from '@react-navigation/elements';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { FadeIn } from 'react-native-reanimated';
+import lodash from 'lodash';
+
 import LuxioUtil from '../lib/LuxioUtil.js';
 import LuxioGradient from './LuxioGradient.js';
+import LuxioSlider from './LuxioSlider.js';
 
 const PRESETS_EFFECTS = [
   {
@@ -312,6 +316,18 @@ export default function LuxioDeviceLarge(props) {
     setGradient(gradient);
   };
 
+  const setBrightnessThrottled = useMemo(() => {
+    return lodash.throttle((value) => {
+      setBrightness(value);
+
+      device.led.setBrightness({
+        brightness: Math.round(value),
+      }).catch(err => {
+        Alert.alert('Error Setting Brightness', err.message);
+      });
+    }, 200);
+  }, []);
+
   useEffect(() => {
     device.connect()
       .then(() => {
@@ -330,33 +346,82 @@ export default function LuxioDeviceLarge(props) {
     <>
       <Stack.Screen
         options={{
-          title: name,
+          title: '',
           headerLeft: () => {
             return (
-              <TouchableOpacity
-                onPress={() => {
-                  router.back();
-                }}
-              >
-                <Ionicons name='chevron-down' size={24} color='white' />
-              </TouchableOpacity>
+              <>
+                <TouchableOpacity
+                  onPress={() => {
+                    router.back();
+                  }}
+                >
+                  <Ionicons name='chevron-down' size={24} color='white' />
+                </TouchableOpacity>
+                <Text
+                  style={{
+                    color: '#ffffff',
+                    fontFamily: 'NunitoBold',
+                    fontSize: 18,
+                    marginLeft: 12,
+                    textShadowColor: '#00000033',
+                    textShadowOffset: {
+                      width: 0,
+                      height: 1,
+                    },
+                    textShadowRadius: 4,
+                  }}
+                >{name}</Text>
+              </>
             );
           },
           headerRight: () => {
             return (
-              <TouchableOpacity
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  router.push({
-                    pathname: '/deviceSettings',
-                    params: {
-                      id: device.id,
+              <>
+                <TouchableOpacity
+                  style={{
+                    marginRight: 12,
+                    backgroundColor: '#ffffff44',
+                    padding: 4,
+                    borderRadius: 100,
+                  }}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    router.push({
+                      pathname: '/deviceSettings',
+                      params: {
+                        id: device.id,
+                      },
+                    });
+                  }}
+                >
+                  <Ionicons name='cog-outline' size={22} color='white' />
+                </TouchableOpacity>
+
+                <Switch
+                  value={on}
+                  onValueChange={(value) => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setOn(value);
+
+                    device.led.setOn({
+                      on: !!value,
+                    }).catch(err => Alert.alert('Error', err.message));
+                  }}
+                  trackColor={{
+                    false: '#ffffff33',
+                    true: '#ffffff33',
+                  }}
+                  {...Platform.OS === 'ios' && ({
+                    ios_backgroundColor: '#ffffff33',
+                  })}
+                  {...Platform.OS === 'android' && ({
+                    thumbColor: '#ffffff',
+                    style: {
+                      marginTop: -8,
                     },
-                  });
-                }}
-              >
-                <Ionicons name='settings-outline' size={24} color='white' />
-              </TouchableOpacity>
+                  })}
+                />
+              </>
             );
           },
         }}
@@ -380,7 +445,7 @@ export default function LuxioDeviceLarge(props) {
           }}
           colors={on
             ? gradient
-            : null
+            : ['#000000', '#333333']
           }
         />
         <LinearGradient
@@ -401,6 +466,15 @@ export default function LuxioDeviceLarge(props) {
       <View
         style={{
           height: useHeaderHeight(),
+        }}
+      />
+
+      <LuxioSlider
+        min={10}
+        max={255}
+        value={brightness}
+        onValueChange={value => {
+          setBrightnessThrottled(value);
         }}
       />
 
@@ -453,38 +527,47 @@ export default function LuxioDeviceLarge(props) {
           style={styles.presetsContainer}
         >
           {PRESET_GRADIENTS.map((preset, i) =>
-            <TouchableScale
-              key={`color-${preset.name}`}
-              style={styles.presetContainer}
-              activeScale={0.95}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-                device.led.setGradient({
-                  colors: preset.colors,
-                }).catch(err => Alert.alert('Error Setting Gradient', err.message));
+            <Animated.View
+              key={`gradient-${preset.name}`}
+              entering={FadeIn.duration(200).delay(i * 50)}
+              style={{
+                ...styles.presetContainer,
+                // Honeycomb
+                // marginTop: i % 3 === 1 ? 48 : 0,
+                // marginBottom: i % 3 === 1 ? -12 : 0,
               }}
             >
-              <LinearGradient
-                colors={preset.colors.map(LuxioUtil.rgbw2hex)}
-                start={[0, 0]}
-                end={[1, 1]}
-                style={styles.presetIcon}
+              <TouchableScale
+                activeScale={0.95}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+                  device.led.setGradient({
+                    colors: preset.colors,
+                  }).catch(err => Alert.alert('Error Setting Gradient', err.message));
+                }}
               >
                 <LinearGradient
-                  style={{
-                    height: '100%',
-                    borderRadius: 36,
-                  }}
-                  colors={['#00000000', '#00000033']}
+                  colors={preset.colors.map(LuxioUtil.rgbw2hex)}
                   start={[0, 0]}
                   end={[1, 1]}
-                />
-              </LinearGradient>
-              <Text
-                style={styles.presetText}
-              >{preset.name}</Text>
-            </TouchableScale>
+                  style={styles.presetIcon}
+                >
+                  <LinearGradient
+                    style={{
+                      height: '100%',
+                      borderRadius: 36,
+                    }}
+                    colors={['#00000000', '#00000033']}
+                    start={[0, 0]}
+                    end={[1, 1]}
+                  />
+                </LinearGradient>
+                <Text
+                  style={styles.presetText}
+                >{preset.name}</Text>
+              </TouchableScale>
+            </Animated.View>
           )}
         </View>
 
@@ -494,39 +577,43 @@ export default function LuxioDeviceLarge(props) {
         <View
           style={styles.presetsContainer}
         >
-          {PRESET_COLORS.map((preset) =>
-            <TouchableScale
+          {PRESET_COLORS.map((preset, i) =>
+            <Animated.View
               key={`color-${preset.name}`}
+              entering={FadeIn.duration(200).delay((Object.keys(PRESET_GRADIENTS).length + i) * 50)}
               style={styles.presetContainer}
-              activeScale={0.95}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-                device.led.setColor(preset.color)
-                  .catch(err => Alert.alert('Error Setting Color', err.message));
-              }}
             >
-              <LinearGradient
-                colors={[
-                  LuxioUtil.rgbw2hex(preset.color),
-                  LuxioUtil.rgbw2hex(preset.color),
-                ]}
-                style={styles.presetIcon}
+              <TouchableScale
+                activeScale={0.95}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+                  device.led.setColor(preset.color)
+                    .catch(err => Alert.alert('Error Setting Color', err.message));
+                }}
               >
                 <LinearGradient
-                  style={{
-                    height: '100%',
-                    borderRadius: 36,
-                  }}
-                  colors={['#00000022', '#00000044']}
-                  start={[0, 0]}
-                  end={[1, 1]}
-                />
-              </LinearGradient>
-              <Text
-                style={styles.presetText}
-              >{preset.name}</Text>
-            </TouchableScale>
+                  colors={[
+                    LuxioUtil.rgbw2hex(preset.color),
+                    LuxioUtil.rgbw2hex(preset.color),
+                  ]}
+                  style={styles.presetIcon}
+                >
+                  <LinearGradient
+                    style={{
+                      height: '100%',
+                      borderRadius: 36,
+                    }}
+                    colors={['#00000022', '#00000044']}
+                    start={[0, 0]}
+                    end={[1, 1]}
+                  />
+                </LinearGradient>
+                <Text
+                  style={styles.presetText}
+                >{preset.name}</Text>
+              </TouchableScale>
+            </Animated.View>
           )}
         </View>
 
