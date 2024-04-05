@@ -993,8 +993,6 @@ PODS:
     - React
     - React-callinvoker
     - React-Core
-  - react-native-slider (4.4.2):
-    - React-Core
   - react-native-zeroconf (0.13.8):
     - React-Core
   - React-nativeconfig (0.73.6)
@@ -1226,7 +1224,6 @@ DEPENDENCIES:
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - "react-native-skia (from `../node_modules/@shopify/react-native-skia`)"
-  - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
   - react-native-zeroconf (from `../node_modules/react-native-zeroconf`)
   - React-nativeconfig (from `../node_modules/react-native/ReactCommon`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
@@ -1352,8 +1349,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-skia:
     :path: "../node_modules/@shopify/react-native-skia"
-  react-native-slider:
-    :path: "../node_modules/@react-native-community/slider"
   react-native-zeroconf:
     :path: "../node_modules/react-native-zeroconf"
   React-nativeconfig:
@@ -1452,7 +1447,6 @@ SPEC CHECKSUMS:
   React-Mapbuffer: 84ea43c6c6232049135b1550b8c60b2faac19fab
   react-native-safe-area-context: 0ee144a6170530ccc37a0fd9388e28d06f516a89
   react-native-skia: 6938bc9afbfaa3a335f53bd37a122fa1af9ea428
-  react-native-slider: 33b8d190b59d4f67a541061bb91775d53d617d9d
   react-native-zeroconf: 5b38b434ccc6ca245c8a5ffd64a4501e67f9edcb
   React-nativeconfig: b4d4e9901d4cabb57be63053fd2aa6086eb3c85f
   React-NativeModulesApple: cd26e56d56350e123da0c1e3e4c76cb58a05e1ee

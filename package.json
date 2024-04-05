@@ -12,8 +12,10 @@
     "build:ios-simulator": "eas build --platform ios --profile development-simulator",
     "build:android": "eas build --platform android",
     "prebuild": "expo prebuild",
+    "submit": "eas submit --platform all --latest",
     "submit:ios": "eas submit --platform ios --latest",
     "submit:android": "eas submit --platform android --latest",
+    "build-and-submit": "eas build --platform all --auto-submit",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "eas": "eas",
@@ -21,7 +23,6 @@
   },
   "dependencies": {
     "@luxio-lighting/lib": "^2.2.2",
-    "@react-native-community/slider": "4.4.2",
     "@shopify/react-native-skia": "0.1.221",
     "expo": "~50.0.14",
     "expo-build-properties": "~0.11.1",

@@ -23,15 +23,23 @@ export default function LuxioGradient({
   }]);
 
   useEffect(() => {
+    if (!Array.isArray(colors)) return;
+    if (colors.length === 1) colors = [colors[0], colors[0]];
+
+    // Check if colors actually changed
+    if (gradients[gradients.length - 1].colors.join() === colors.join()) return;
+
     // Add new colors to gradients
     const gradientsNew = [...gradients, {
       colors,
       createdAt: Date.now(),
     }];
 
-    // Remove oldest gradient
-    if (gradientsNew.length >= 3) {
-      gradientsNew.shift();
+    // Remove expired gradient
+    for (let i = 0; i < gradientsNew.length - 1; i++) {
+      if (Date.now() - gradientsNew[i].createdAt > duration) {
+        gradientsNew.shift();
+      }
     }
 
     setGradients(gradientsNew);

@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Text, View, Switch, Platform, Alert, TouchableOpacity } from 'react-native';
-import Slider from '@react-native-community/slider';
 import TouchableScale from 'react-native-touchable-scale';
 import { router } from 'expo-router';
 import Animated, { withTiming, useAnimatedStyle, Easing } from 'react-native-reanimated';
@@ -8,9 +7,11 @@ import * as Haptics from 'expo-haptics';
 import lodash from 'lodash';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { LuxioDiscoveryStrategyAP } from '@luxio-lighting/lib';
+
 import LuxioUtil from '../lib/LuxioUtil.js';
 import LuxioGradient from './LuxioGradient.js';
-import { LuxioDiscoveryStrategyAP } from '@luxio-lighting/lib';
+import LuxioSlider from './LuxioSlider.js';
 
 export default function LuxioDeviceSmall(props) {
   const { device } = props;
@@ -24,7 +25,7 @@ export default function LuxioDeviceSmall(props) {
 
   const animatedContainerStyle = useAnimatedStyle(() => {
     return {
-      height: withTiming(on ? 120 : 80, {
+      height: withTiming(on ? 108 : 80, {
         duration: 300,
         easing: Easing.bezier(0.5, 0.01, 0, 1),
       }),
@@ -45,7 +46,7 @@ export default function LuxioDeviceSmall(props) {
       setBrightness(value);
 
       device.led.setBrightness({
-        brightness: value,
+        brightness: Math.round(value),
       }).catch(err => {
         Alert.alert('Error Setting Brightness', err.message);
       });
@@ -79,10 +80,7 @@ export default function LuxioDeviceSmall(props) {
         setName(device.system.config?.name);
         setLedState(device.led.state);
       })
-      .catch(err => {
-        setError(err.message);
-        // Alert.alert('Error Connecting', err.message);
-      });
+      .catch(err => setError(err.message));
 
     device.addEventListener('led.state', (state) => {
       setLedState(state);
@@ -273,25 +271,6 @@ export default function LuxioDeviceSmall(props) {
             start={[0, 0]}
             end={[0, 1]}
           />
-          {/* <AnimatedGradient
-            style={{
-              borderRadius: 16,
-              ...isHotspot
-                ? {
-                  borderTopLeftRadius: 0,
-                  borderTopRightRadius: 0,
-                }
-                : {},
-              height: '100%',
-            }}
-            colors={
-              on
-                ? gradient
-                : ['#00000000', '#00000000']
-            }
-            start={[0, 1]}
-            end={[1, 1]}
-          /> */}
           <View
             style={{
               flex: 1,
@@ -370,42 +349,23 @@ export default function LuxioDeviceSmall(props) {
                   ? 'auto'
                   : 'none',
                 position: 'absolute',
-                left: 24,
-                right: 24,
-                top: 64,
+                left: 0,
+                right: 0,
+                top: 64 + 12,
               }, animatedSliderStyle]}
             >
-              {/* <LinearGradient
-                  colors={['#FFFFFF00', '#FFFFFFFF', '#00000000', '#00000000']}
-                  start={[0, 0]}
-                  end={[1, 0]}
-                  locations={[0, brightness, brightness, 1]}
-                  style={{
-                    height: 32,
-                    borderRadius: 16,
-                  }}
-                > */}
-              <Slider
-                style={{
-                  height: 32,
-                }}
-                onValueChange={(value) => {
+              <LuxioSlider
+                min={10}
+                max={255}
+                value={brightness}
+                onValueChange={value => {
                   setBrightnessThrottled(value);
                 }}
-                minimumValue={10}
-                maximumValue={255}
-                step={1}
-                tapToSeek={true}
-                value={brightness}
-                minimumTrackTintColor="#FFFFFFAA"
-                maximumTrackTintColor="#FFFFFF33"
               />
-              {/* </LinearGradient> */}
             </Animated.View>
           )}
-          {/* </LinearGradient> */}
-        </Animated.View>
-      </TouchableScale>
+        </Animated.View >
+      </TouchableScale >
     </>
   );
 }

@@ -295,7 +295,7 @@ export default function LuxioDeviceLarge(props) {
   const [name, setName] = useState(device.name);
   const [on, setOn] = useState(false);
   const [brightness, setBrightness] = useState(null);
-  const [gradient, setGradient] = useState(['#222222', '#333333']);
+  const [gradient, setGradient] = useState(null);
 
   const setLedState = (ledState) => {
     // On
@@ -377,11 +377,11 @@ export default function LuxioDeviceLarge(props) {
             position: 'absolute',
             width: '100%',
             height: '100%',
-            opacity: on
-              ? 0.2 + brightness * 0.8
-              : 0,
           }}
-          colors={gradient}
+          colors={on
+            ? gradient
+            : null
+          }
         />
         <LinearGradient
           style={{
