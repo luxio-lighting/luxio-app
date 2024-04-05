@@ -43,8 +43,6 @@ export default function LuxioDeviceSmall(props) {
 
   const setBrightnessThrottled = useMemo(() => {
     return lodash.throttle((value) => {
-      setBrightness(value);
-
       device.led.setBrightness({
         brightness: Math.round(value),
       }).catch(err => {

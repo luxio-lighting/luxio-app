@@ -340,8 +340,6 @@ export default function LuxioDeviceLarge(props) {
 
   const setBrightnessThrottled = useMemo(() => {
     return lodash.throttle((value) => {
-      setBrightness(value);
-
       device.led.setBrightness({
         brightness: Math.round(value),
       }).catch(err => {
@@ -503,6 +501,7 @@ export default function LuxioDeviceLarge(props) {
       <Animated.View
         style={[{
           marginBottom: 12,
+          marginHorizontal: 8,
           overflow: 'hidden',
         }, animatedContainerStyle]}
       >
@@ -656,7 +655,7 @@ export default function LuxioDeviceLarge(props) {
             )}
         </View>
 
-      </ScrollView >
+      </ScrollView>
     </>
   );
 }
