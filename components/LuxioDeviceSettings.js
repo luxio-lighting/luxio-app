@@ -45,13 +45,34 @@ export default function LuxioDeviceSettings(props) {
     <>
       <Stack.Screen
         options={{
-          title: 'Settings',
+          title: '',
+          headerBackVisible: false,
+          headerTitle: () => {
+            return (
+              <Text
+                style={{
+                  color: '#ffffff',
+                  fontFamily: 'NunitoBold',
+                  fontSize: 18,
+                  textShadowColor: '#00000033',
+                  textShadowOffset: {
+                    width: 0,
+                    height: 1,
+                  },
+                  textShadowRadius: 4,
+                }}
+              >Settings</Text>
+            );
+          },
           headerTransparent: true,
           headerLeft: () => {
             return (
               <TouchableOpacity
                 onPress={() => {
                   router.back();
+                }}
+                style={{
+                  marginRight: Platform.OS === 'android' ? 12 : 0,
                 }}
               >
                 <Ionicons name={
