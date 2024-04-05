@@ -25,7 +25,7 @@ export default function LuxioDeviceSmall(props) {
 
   const animatedContainerStyle = useAnimatedStyle(() => {
     return {
-      height: withTiming(on ? 108 : 80, {
+      height: withTiming(on ? 98 : 80, {
         duration: 300,
         easing: Easing.bezier(0.5, 0.01, 0, 1),
       }),
@@ -84,6 +84,10 @@ export default function LuxioDeviceSmall(props) {
 
     device.addEventListener('led.state', (state) => {
       setLedState(state);
+    });
+
+    device.addEventListener('system.config', (config) => {
+      setName(config.name);
     });
   }, []);
 
@@ -348,7 +352,7 @@ export default function LuxioDeviceSmall(props) {
                 position: 'absolute',
                 left: 0,
                 right: 0,
-                top: 64 + 12,
+                top: 66,
               }, animatedSliderStyle]}
             >
               <LuxioSlider

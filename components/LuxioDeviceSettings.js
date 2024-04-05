@@ -313,6 +313,11 @@ export default function LuxioDeviceSettings(props) {
           <View style={styles.rowContainerEdit}>
             <TouchableOpacity
               onPress={() => {
+                if (device.id === 'demo') {
+                  Alert.alert('Demo Device', 'You cannot edit the Wi-Fi settings of a demo device.');
+                  return;
+                }
+
                 router.push({
                   pathname: '/newDevice',
                   params: {

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { ScrollView, View, Text, ActivityIndicator } from 'react-native';
+import { ScrollView, View, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { AntDesign, Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants'
 import TouchableScale from 'react-native-touchable-scale';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -8,25 +9,40 @@ import * as Haptics from 'expo-haptics';
 import discovery from '../services/discovery.js';
 
 import LuxioDeviceSmall from './LuxioDeviceSmall.js';
-import { LuxioGradient } from './LuxioGradient.js';
 
 export default function LuxioDevices() {
   const [devices, setDevices] = useState(null);
 
   useEffect(() => {
     discovery.registerDeviceCallback(() => {
-      const devices = discovery.getDevices();
-      setDevices({ ...devices });
+      const newDevices = discovery.getDevices();
+      setDevices({
+        ...devices,
+        ...newDevices,
+      });
     });
 
-    const devices = discovery.getDevices();
-    if (Object.keys(devices).length > 0) {
-      setDevices({ ...devices });
+    const newDevices = discovery.getDevices();
+    if (Object.keys(newDevices).length > 0) {
+      setDevices({
+        ...devices,
+        ...newDevices,
+      });
     } else {
       setTimeout(() => {
-        const devices = discovery.getDevices();
-        setDevices({ ...devices });
+        const newDevices = discovery.getDevices();
+        setDevices({
+          ...devices,
+          ...newDevices,
+        });
       }, 5000); // Show 'No Luxios Found' after 5 seconds
+
+      // If using Expo Go, Discovery will fail, so we'll just render no devices.
+      // TODO: Add support for nupnp discovery as fallback
+      if (Constants.appOwnership === 'expo') {
+        console.warn('Discovery is not supported in Expo Go');
+        setDevices({});
+      }
     }
   }, []);
 
@@ -167,6 +183,7 @@ export default function LuxioDevices() {
                 height: 6,
               },
               shadowRadius: 12,
+              marginBottom: 40,
             }}
           >
             <Text
@@ -177,6 +194,21 @@ export default function LuxioDevices() {
               }}
             >Setup new Luxio</Text>
           </TouchableScale>
+
+          <TouchableOpacity
+            onPress={() => {
+              discovery.enableDemo();
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: 'NunitoSemiBold',
+                fontSize: 18,
+                color: 'white',
+                opacity: 0.75,
+              }}
+            >Or you can <Text style={{ textDecorationLine: 'underline' }}>try a demo Luxio</Text>.</Text>
+          </TouchableOpacity>
         </View>
       )}
 
