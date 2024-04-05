@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Alert, ScrollView, TouchableOpacity, Button } from 'react-native';
+import { StyleSheet, View, Text, Alert, ScrollView, TouchableOpacity, Button, Platform } from 'react-native';
 import { router, Stack } from 'expo-router';
 import Dialog from 'react-native-dialog';
 import { Ionicons, Feather } from '@expo/vector-icons';
@@ -45,7 +45,7 @@ export default function LuxioDeviceSettings(props) {
     <>
       <Stack.Screen
         options={{
-          title: name,
+          title: 'Settings',
           headerTransparent: true,
           headerLeft: () => {
             return (
@@ -54,7 +54,11 @@ export default function LuxioDeviceSettings(props) {
                   router.back();
                 }}
               >
-                <Ionicons name='chevron-down' size={24} color='white' />
+                <Ionicons name={
+                  Platform.OS === 'ios'
+                    ? 'chevron-down'
+                    : 'chevron-back'
+                } size={24} color='white' />
               </TouchableOpacity>
             );
           },

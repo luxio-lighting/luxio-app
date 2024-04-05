@@ -382,7 +382,11 @@ export default function LuxioDeviceLarge(props) {
                     router.back();
                   }}
                 >
-                  <Ionicons name='chevron-down' size={24} color='white' />
+                  <Ionicons name={
+                    Platform.OS === 'ios'
+                      ? 'chevron-down'
+                      : 'chevron-back'
+                  } size={24} color='white' />
                 </TouchableOpacity>
                 <Text
                   style={{

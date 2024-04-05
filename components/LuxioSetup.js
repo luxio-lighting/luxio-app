@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, ScrollView, RefreshControl, Linking, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView, RefreshControl, Linking, Alert, TouchableOpacity, Platform } from 'react-native';
 import TouchableScale from 'react-native-touchable-scale';
 import { router, Stack } from 'expo-router';
 import Dialog from 'react-native-dialog';
@@ -107,7 +107,11 @@ export default function LuxioSetup(props) {
                   router.back();
                 }}
               >
-                <Ionicons name='chevron-down' size={24} color='white' />
+                <Ionicons name={
+                  Platform.OS === 'ios'
+                    ? 'chevron-down'
+                    : 'chevron-back'
+                } size={24} color='white' />
               </TouchableOpacity>
             );
           },

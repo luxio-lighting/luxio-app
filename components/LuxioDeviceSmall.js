@@ -334,9 +334,6 @@ export default function LuxioDeviceSmall(props) {
                   })}
                   {...Platform.OS === 'android' && ({
                     thumbColor: '#ffffff',
-                    style: {
-                      marginTop: -8,
-                    },
                   })}
                 />
               )}
