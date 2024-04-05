@@ -25,7 +25,7 @@ export default function LuxioDeviceSmall(props) {
 
   const animatedContainerStyle = useAnimatedStyle(() => {
     return {
-      height: withTiming(on ? 98 : 80, {
+      height: withTiming(on ? 106 : 80, {
         duration: 300,
         easing: Easing.bezier(0.5, 0.01, 0, 1),
       }),
@@ -352,7 +352,7 @@ export default function LuxioDeviceSmall(props) {
                 position: 'absolute',
                 left: 0,
                 right: 0,
-                top: 66,
+                top: 72,
               }, animatedSliderStyle]}
             >
               <LuxioSlider
