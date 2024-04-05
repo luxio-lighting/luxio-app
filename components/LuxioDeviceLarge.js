@@ -445,9 +445,6 @@ export default function LuxioDeviceLarge(props) {
                   })}
                   {...Platform.OS === 'android' && ({
                     thumbColor: '#ffffff',
-                    style: {
-                      marginTop: -8,
-                    },
                   })}
                 />
               </>
