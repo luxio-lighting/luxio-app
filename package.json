@@ -43,7 +43,8 @@
     "react-native-safe-area-context": "4.8.2",
     "react-native-screens": "~3.29.0",
     "react-native-touchable-scale": "^2.2.0",
-    "react-native-zeroconf": "^0.13.8"
+    "react-native-zeroconf": "^0.13.8",
+    "tinycolor2": "^1.6.0"
   },
   "overrides": {
     "@expo/prebuild-config": "~6.7.0",

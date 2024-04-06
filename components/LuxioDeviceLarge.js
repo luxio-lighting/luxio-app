@@ -554,6 +554,20 @@ export default function LuxioDeviceLarge(props) {
           )}
         </View> */}
 
+        <TouchableOpacity
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.push({
+              pathname: '/deviceColor',
+              params: {
+                id: device.id,
+              },
+            });
+          }}
+        >
+          <Text>Color</Text>
+        </TouchableOpacity>
+
         <Text
           style={styles.presetsTitle}
         >Gradients</Text>

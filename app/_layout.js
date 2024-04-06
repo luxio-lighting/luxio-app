@@ -34,6 +34,17 @@ export default function Layout() {
             }}
           />
           <Stack.Screen
+            name="deviceColor"
+            options={{
+              presentation: 'modal',
+              headerShown: true,
+              headerStyle: {
+                backgroundColor: '#222222',
+              },
+              headerTintColor: '#ffffff',
+            }}
+          />
+          <Stack.Screen
             name="newDevice"
             options={{
               headerShown: true,

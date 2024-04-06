@@ -202,7 +202,7 @@ export default function LuxioDeviceSmall(props) {
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           router.push({
-            pathname: 'device',
+            pathname: 'deviceColor',
             params: {
               id: device.id,
             },
