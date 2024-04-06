@@ -10,17 +10,15 @@ import { runOnJS, useSharedValue } from 'react-native-reanimated';
 
 import LuxioUtil from '../lib/LuxioUtil';
 
-export default function LuxioDeviceSettings(props) {
+export default function LuxioDeviceColor(props) {
   const { device } = props;
 
-  const [size, setSize] = useState(256);
-  const [cursorSize, setCursorSize] = useState(32);
-  const cursorX = useSharedValue(size / 2);
-  const cursorY = useSharedValue(size / 2);
+  const [canvasSize, setCanvasSize] = useState(0);
+  const [circleSize, setCircleSize] = useState(0);
+  const [cursorSize, setCursorSize] = useState(40);
+  const cursorX = useSharedValue(canvasSize / 2);
+  const cursorY = useSharedValue(canvasSize / 2);
   const cursorColor = useSharedValue('#FFFFFF');
-  // const [cursorX, setCursorX] = useState(size / 2);
-  // const [cursorY, setCursorY] = useState(size / 2);
-  // const [cursorColor, setCursorColor] = useState('#FFFFFF');
 
   useEffect(() => {
     device.connect()
@@ -66,24 +64,23 @@ export default function LuxioDeviceSettings(props) {
       // setCursorSize(32);
     })
     .onUpdate(({ x, y }) => {
-      // Limit between bounds of the circle
-      const dx = x - size / 2;
-      const dy = y - size / 2;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      if (distance > size / 2) {
-        const angle = Math.atan2(dy, dx);
-        x = size / 2 + Math.cos(angle) * size / 2;
-        y = size / 2 + Math.sin(angle) * size / 2;
+      // Limit between bounds of the circle.
+      const distance = Math.sqrt((x - circleSize / 2) ** 2 + (y - circleSize / 2) ** 2);
+      if (distance > circleSize / 2) {
+        const angle = Math.atan2(y - circleSize / 2, x - circleSize / 2);
+        x = circleSize / 2 + Math.cos(angle) * (circleSize / 2);
+        y = circleSize / 2 + Math.sin(angle) * (circleSize / 2);
       }
 
-      cursorX.value = x;
-      cursorY.value = y;
+      cursorX.value = x + cursorSize / 2;
+      cursorY.value = y + cursorSize / 2;
 
       // Get HSV from x, y
-      const h = Math.round((Math.atan2(y - size / 2, x - size / 2) * 180 / Math.PI + 360) % 360);
-      const s = Math.min(1, distance / (size / 2));
+      const h = Math.round((Math.atan2(y - circleSize / 2, x - circleSize / 2) * 180 / Math.PI + 360) % 360);
+      const s = Math.min(1, distance / (circleSize / 2));
       const v = 1;
 
+      // Convert to HSL
       function hsv2hsl(hsvH, hsvS, hsvV) {
         const hslL = (200 - hsvS) * hsvV / 100;
         const [hslS, hslV] = [
@@ -95,10 +92,12 @@ export default function LuxioDeviceSettings(props) {
 
       const hsl = hsv2hsl(h, s * 100, v * 100);
 
+      // Set cursor color
       cursorColor.value = `hsl(${hsl[0]}, ${hsl[1]}%, ${hsl[2]}%)`;
 
+      // Sync color
       runOnJS(syncColor)({ h, s, v });
-    })
+    });
 
   return (
     <>
@@ -120,7 +119,7 @@ export default function LuxioDeviceSettings(props) {
                   },
                   textShadowRadius: 4,
                 }}
-              >Color</Text>
+              >Color Picker</Text>
             );
           },
           headerTransparent: true,
@@ -160,43 +159,58 @@ export default function LuxioDeviceSettings(props) {
             height: '100%',
           }}
           onLayout={e => {
-            setSize(Math.min(e.nativeEvent.layout.width, e.nativeEvent.layout.height) - 64);
+            const canvasSize = Math.min(e.nativeEvent.layout.width, e.nativeEvent.layout.height);
+            setCanvasSize(canvasSize);
+            setCircleSize(canvasSize - cursorSize - cursorSize);
+
+            cursorX.value = canvasSize / 2 - cursorSize / 2;
+            cursorY.value = canvasSize / 2 - cursorSize / 2;
           }}
         >
+
+          <Skia.Canvas style={{
+            width: canvasSize,
+            height: canvasSize,
+          }}>
+            <Skia.Circle cx={canvasSize / 2} cy={canvasSize / 2} r={circleSize / 2}>
+              <Skia.SweepGradient
+                c={Skia.vec(canvasSize / 2, canvasSize / 2)}
+                colors={Array(36).fill(0).map((_, i) => `hsl(${i * 10}, 100%, 50%)`)}
+              />
+            </Skia.Circle>
+            <Skia.Circle cx={canvasSize / 2} cy={canvasSize / 2} r={circleSize / 2}>
+              <Skia.RadialGradient
+                c={Skia.vec(canvasSize / 2, canvasSize / 2)}
+                r={circleSize / 2}
+                colors={["#FFFFFFFF", "#FFFFFF00"]}
+              />
+            </Skia.Circle>
+
+            <Skia.RoundedRect
+              width={cursorSize}
+              height={cursorSize}
+              x={cursorX}
+              y={cursorY}
+              r={cursorSize / 2}
+              color={cursorColor}
+            >
+              <Skia.Shadow dx={0} dy={0} blur={2} color="#000000CC" />
+              <Skia.Shadow dx={0} dy={7} blur={10} color="#00000033" />
+
+            </Skia.RoundedRect>
+          </Skia.Canvas>
+
           <GestureDetector
             gesture={pan}
           >
-            <Skia.Canvas style={{
-              width: size + 32,
-              height: size + 32,
-            }}>
-              <Skia.Circle cx={size / 2 + 16} cy={size / 2 + 16} r={size / 2}>
-                <Skia.SweepGradient
-                  c={Skia.vec(size / 2 + 16, size / 2 + 16)}
-                  colors={Array(36).fill(0).map((_, i) => `hsl(${i * 10}, 100%, 50%)`)}
-                />
-              </Skia.Circle>
-              <Skia.Circle cx={size / 2 + 16} cy={size / 2 + 16} r={size / 2}>
-                <Skia.RadialGradient
-                  c={Skia.vec(size / 2 + 16, size / 2 + 16)}
-                  r={size / 2}
-                  colors={["#FFFFFFFF", "#FFFFFF00"]}
-                />
-              </Skia.Circle>
-
-              <Skia.RoundedRect
-                width={cursorSize}
-                height={cursorSize}
-                x={cursorX}
-                y={cursorY}
-                r={cursorSize / 2}
-                color={cursorColor}
-              >
-                <Skia.Shadow dx={0} dy={0} blur={2} color="#000000CC" />
-                <Skia.Shadow dx={0} dy={7} blur={10} color="#00000033" />
-
-              </Skia.RoundedRect>
-            </Skia.Canvas>
+            <View style={{
+              position: 'absolute',
+              left: cursorSize,
+              top: cursorSize,
+              width: circleSize,
+              height: circleSize,
+            }}
+            />
           </GestureDetector>
         </View>
 

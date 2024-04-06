@@ -8,6 +8,7 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { Easing, FadeIn, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import lodash from 'lodash';
+import * as Skia from '@shopify/react-native-skia';
 
 import LuxioUtil from '../lib/LuxioUtil.js';
 import LuxioGradient from './LuxioGradient.js';
@@ -553,21 +554,6 @@ export default function LuxioDeviceLarge(props) {
             </TouchableScale>
           )}
         </View> */}
-
-        <TouchableOpacity
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            router.push({
-              pathname: '/deviceColor',
-              params: {
-                id: device.id,
-              },
-            });
-          }}
-        >
-          <Text>Color</Text>
-        </TouchableOpacity>
-
         <Text
           style={styles.presetsTitle}
         >Gradients</Text>
@@ -664,6 +650,55 @@ export default function LuxioDeviceLarge(props) {
                 </TouchableScale>
               </Animated.View>
             )}
+
+          {/* Color Picker */}
+          <Animated.View
+            entering={FadeIn.duration(200).delay((Object.keys(PRESET_GRADIENTS).length + Object.keys(PRESET_COLORS).length) * 50)}
+            style={styles.presetContainer}
+          >
+            <TouchableScale
+              activeScale={0.95}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push({
+                  pathname: '/deviceColor',
+                  params: {
+                    id: device.id,
+                  },
+                });
+              }}
+            >
+              <View style={styles.presetIconWrap}>
+                <Skia.Canvas style={{
+                  width: 72,
+                  height: 72,
+                }}>
+                  <Skia.Circle cx={72 / 2} cy={72 / 2} r={72 / 2}>
+                    <Skia.SweepGradient
+                      c={Skia.vec(72 / 2, 72 / 2)}
+                      colors={Array(36).fill(0).map((_, i) => `hsl(${i * 10}, 100%, 50%)`)}
+                    />
+                  </Skia.Circle>
+                  <Skia.Circle cx={72 / 2} cy={72 / 2} r={72 / 2}>
+                    <Skia.RadialGradient
+                      c={Skia.vec(72 / 2, 72 / 2)}
+                      r={72 / 2}
+                      colors={["#FFFFFFFF", "#FFFFFF00"]}
+                    />
+                  </Skia.Circle>
+                </Skia.Canvas>
+                <LinearGradient
+                  style={styles.presetIconOverlay}
+                  colors={['#00000022', '#00000044']}
+                  start={[0, 0]}
+                  end={[1, 1]}
+                />
+              </View>
+              <Text
+                style={styles.presetText}
+              >Color Picker</Text>
+            </TouchableScale>
+          </Animated.View>
         </View>
 
       </ScrollView>
