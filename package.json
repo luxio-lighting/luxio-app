@@ -16,6 +16,8 @@
     "submit:ios": "eas submit --platform ios --latest",
     "submit:android": "eas submit --platform android --latest",
     "build-and-submit": "eas build --platform all --auto-submit",
+    "build-and-submit:ios": "eas build --platform ios --auto-submit",
+    "build-and-submit:android": "eas build --platform android --auto-submit",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "eas": "eas",
